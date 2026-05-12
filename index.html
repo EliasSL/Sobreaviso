@@ -168,6 +168,14 @@
         }
         .detalhe-label { font-weight: 600; color: #c4e69a; }
         .detalhe-valor { font-weight: 700; color: #feffc2; font-size: 1rem; }
+        .ferias-destaque {
+            background: rgba(255,200,50,0.15);
+            border-left: 3px solid #ffcc66;
+            margin-top: 0.3rem;
+            margin-bottom: 0.3rem;
+        }
+        .ferias-destaque .detalhe-label { color: #ffdd88; }
+        .ferias-destaque .detalhe-valor { color: #ffeeaa; font-weight: 800; }
         .fechar-modal, .close-img {
             background: #3d5e2b;
             border: none;
@@ -241,7 +249,7 @@
     // ========== FUNÇÃO PARA OBTER O MÊS ATUAL ==========
     function getMesAtual() {
         const hoje = new Date();
-        const mesAtual = hoje.getMonth(); // 0 = Janeiro, 11 = Dezembro
+        const mesAtual = hoje.getMonth();
         return TODOS_MESES[mesAtual];
     }
     
@@ -251,7 +259,6 @@
         
         let strUrl = String(url).trim();
         
-        // Extrai o ID do Google Drive
         let match = strUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
         if (!match) {
             match = strUrl.match(/id=([a-zA-Z0-9_-]+)/);
@@ -264,7 +271,6 @@
             return `https://drive.google.com/uc?export=view&id=${match[1]}`;
         }
         
-        // Se já for URL válida de imagem
         if (strUrl.match(/^https?:\/\/(?!drive\.google\.com)/i)) {
             return strUrl;
         }
@@ -272,7 +278,6 @@
         return null;
     }
     
-    // Extrai ID do Google Drive
     function extrairIdGoogleDrive(url) {
         if (!url) return null;
         let match = String(url).match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
@@ -280,7 +285,6 @@
         return match ? match[1] : null;
     }
     
-    // Função para converter data ISO para nome do mês
     function converterDataParaMes(dataStr) {
         if (!dataStr) return "";
         
@@ -296,7 +300,6 @@
             return TODOS_MESES[data.getMonth()];
         }
         
-        // Se já for nome do mês, retorna
         if (TODOS_MESES.includes(dataStr)) {
             return dataStr;
         }
@@ -326,11 +329,9 @@
             console.log('📊 Dados recebidos da planilha:', data);
             
             if (data && data.escala && data.escala.length > 0) {
-                // Processa os dados da escala
                 escalaData = data.escala.map(item => {
                     let mesConvertido = item.mes;
                     
-                    // Tenta converter se for data
                     if (mesConvertido && (mesConvertido.includes('T') || mesConvertido.includes('Z') || mesConvertido.includes('-') && mesConvertido.length > 5)) {
                         mesConvertido = converterDataParaMes(mesConvertido);
                     }
@@ -346,11 +347,12 @@
                         sabadoP2: Number(item.sabadoP2) || 0,
                         domingoP1: Number(item.domingoP1) || 0,
                         domingoP2: Number(item.domingoP2) || 0,
-                        totalFDS: Number(item.totalFDS) || 0
+                        totalFDS: Number(item.totalFDS) || 0,
+                        feriasInicio: item.feriasInicio || item.feriasInicial || "",
+                        feriasFinal: item.feriasFinal || ""
                     };
                 }).filter(item => item.servidor && item.mes);
                 
-                // Processa as imagens
                 imagensData = [];
                 if (data.imagens && data.imagens.length > 0) {
                     for (let img of data.imagens) {
@@ -360,7 +362,6 @@
                             const urlConvertida = converterLinkGoogleDrive(urlOriginal);
                             const idDrive = extrairIdGoogleDrive(urlOriginal);
                             
-                            // Converte o mês da imagem também
                             let mesImagem = img.mes;
                             if (mesImagem && (mesImagem.includes('T') || mesImagem.includes('Z'))) {
                                 mesImagem = converterDataParaMes(mesImagem);
@@ -379,8 +380,10 @@
                     }
                 }
                 
-                // Identifica quais meses tem dados na escala
                 mesesComDados = [...new Set(escalaData.map(item => item.mes))];
+                
+                // Log para debug das férias
+                console.log('📋 Primeiro servidor com dados de férias:', escalaData.find(s => s.feriasInicio || s.feriasFinal));
                 
                 statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> Dados carregados!';
                 statusSpan.style.color = "#aaffaa";
@@ -396,21 +399,17 @@
         }
     }
     
-    // Renderizar botões dos meses - MOSTRA TODOS OS 12 MESES e seleciona o mês atual
     function renderMeses() {
         const container = document.getElementById("monthsContainer");
         container.innerHTML = "";
         
         const mesAtual = getMesAtual();
         
-        // Mostra TODOS os meses do ano
         TODOS_MESES.forEach(month => {
             const btn = document.createElement("button");
-            // Verifica se é o mês atual
             const isCurrentMonth = (month === mesAtual);
             btn.className = `month-btn ${month === currentMonth ? 'active' : ''}`;
             
-            // Adiciona um ícone de estrela no mês atual
             btn.innerHTML = `<i class="fas ${isCurrentMonth ? 'fa-star' : 'fa-calendar-alt'}"></i> ${month}`;
             btn.title = isCurrentMonth ? `Mês atual - ${month}` : (mesesComDados.includes(month) ? `Tem ${escalaData.filter(s => s.mes === month).length} servidor(es)` : "Nenhum servidor cadastrado");
             
@@ -422,7 +421,6 @@
             container.appendChild(btn);
         });
         
-        // Rola automaticamente para o mês atual, se necessário
         setTimeout(() => {
             const activeBtn = container.querySelector('.month-btn.active');
             if (activeBtn) {
@@ -431,7 +429,6 @@
         }, 100);
     }
     
-    // Renderizar cards dos servidores
     function renderCards(month) {
         const grid = document.getElementById("cardsGrid");
         const filtered = escalaData.filter(item => item.mes === month);
@@ -461,9 +458,20 @@
         });
     }
     
-    // Abrir modal com detalhes do servidor
+    function formatarFerias(texto) {
+        if (!texto || texto.toString().trim() === "" || texto === "null" || texto === "undefined") {
+            return "<span style='color: #99aa77; font-style: italic;'>Não informado</span>";
+        }
+        return texto;
+    }
+    
     function abrirDetalhes(servidor) {
+        console.log('🔍 Detalhes do servidor:', servidor);
+        console.log('📅 Férias Início:', servidor.feriasInicio);
+        console.log('📅 Férias Final:', servidor.feriasFinal);
+        
         document.getElementById("modalServidorNome").innerHTML = `<i class="fas fa-chart-line"></i> ${servidor.servidor} - ${servidor.mes}`;
+        
         document.getElementById("detalhesContainer").innerHTML = `
             <div class="detalhe-linha"><span class="detalhe-label">P1 (total mês):</span><span class="detalhe-valor">${servidor.p1}</span></div>
             <div class="detalhe-linha"><span class="detalhe-label">P2 (total mês):</span><span class="detalhe-valor">${servidor.p2}</span></div>
@@ -473,11 +481,21 @@
             <div class="detalhe-linha"><span class="detalhe-label">Domingo P1:</span><span class="detalhe-valor">${servidor.domingoP1}</span></div>
             <div class="detalhe-linha"><span class="detalhe-label">Domingo P2:</span><span class="detalhe-valor">${servidor.domingoP2}</span></div>
             <div class="detalhe-linha"><span class="detalhe-label">Total FDS (mês):</span><span class="detalhe-valor">${servidor.totalFDS}</span></div>
+            
+            <div style="margin: 0.5rem 0; border-top: 2px solid #5a7a3a; margin-top: 0.3rem;"></div>
+            
+            <div class="detalhe-linha ferias-destaque">
+                <span class="detalhe-label"><i class="fas fa-umbrella-beach"></i> Férias (Início):</span>
+                <span class="detalhe-valor">${formatarFerias(servidor.feriasInicio)}</span>
+            </div>
+            <div class="detalhe-linha ferias-destaque">
+                <span class="detalhe-label"><i class="fas fa-calendar-check"></i> Férias (Fim):</span>
+                <span class="detalhe-valor">${formatarFerias(servidor.feriasFinal)}</span>
+            </div>
         `;
         document.getElementById("detalheModal").style.display = "flex";
     }
     
-    // Visualizar imagem do mês atual
     function visualizarImagem() {
         const imagemObj = imagensData.find(img => img.mes === currentMonth);
         const debugDiv = document.getElementById("imagemDebugInfo");
@@ -549,10 +567,7 @@
     
     async function init() {
         await carregarDados();
-        
-        // Define o mês atual como o selecionado
         currentMonth = getMesAtual();
-        
         renderMeses();
         renderCards(currentMonth);
         document.getElementById("btnVisualizarImagem").onclick = visualizarImagem;
