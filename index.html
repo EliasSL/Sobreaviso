@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SEVIC/NBO - Escala de Sobreaviso</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0a2a08 0%, #143d0a 50%, #1a4a0c 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(210, 255, 100, 0.12), rgba(50, 180, 30, 0.04) 80%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .container { max-width: 1200px; margin: 0 auto; position: relative; z-index: 2; }
+        .header { text-align: center; margin-bottom: 1.5rem; }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #e6ffa3, #ccff66, #b3ff33);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .header p {
+            color: #ebffc7;
+            background: rgba(0,0,0,0.35);
+            display: inline-block;
+            padding: 0.2rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            margin-top: 0.3rem;
+        }
+        .months-wrapper {
+            background: rgba(8,25,4,0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 50px;
+            padding: 0.5rem 0.8rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(200,255,100,0.6);
+        }
+        .months-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.7rem;
+            padding: 0.3rem 0.2rem;
+            scrollbar-width: thin;
+        }
+        .months-scroll::-webkit-scrollbar { height: 5px; }
+        .months-scroll::-webkit-scrollbar-track { background: #2a5518; border-radius: 10px; }
+        .months-scroll::-webkit-scrollbar-thumb { background: #cdff5e; border-radius: 10px; }
+        .month-btn {
+            background: #1f3a17;
+            border: none;
+            padding: 0.5rem 1.3rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #e2ffb3;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .month-btn.active {
+            background: #ccff55;
+            color: #0a3a02;
+            box-shadow: 0 0 10px #e2ff7a;
+            font-weight: 800;
+        }
+        .month-btn:hover {
+            background: #5a8a3a;
+            color: white;
+            transform: scale(1.02);
+        }
+        .image-btn-container { text-align: right; margin-bottom: 1rem; }
+        .btn-imagem {
+            background: #2a5520;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            color: #f0ffd6;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-imagem:hover { background: #44832e; box-shadow: 0 0 8px #b3ff66; }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .card {
+            background: rgba(18,35,12,0.9);
+            backdrop-filter: blur(6px);
+            border-radius: 1.2rem;
+            padding: 0.9rem 0.8rem;
+            border-left: 4px solid #d4ff6e;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .card:hover { 
+            transform: translateY(-3px); 
+            background: rgba(28,52,18,0.95); 
+            box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+            border-left: 4px solid #ffff88;
+        }
+        .servidor-nome { 
+            font-size: 1rem; 
+            font-weight: 700; 
+            color: #f5ffcf; 
+            margin-bottom: 0.4rem;
+            word-break: break-word;
+        }
+        .total-geral { 
+            font-size: 1.3rem; 
+            font-weight: 800; 
+            background: linear-gradient(135deg, #e6ffa3, #ccff66); 
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            color: transparent; 
+        }
+        .total-label { font-size: 0.65rem; color: #b8da8a; margin-top: 0.2rem; }
+        .modal, .modal-imagem {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content, .modal-imagem-content {
+            background: #1e3317;
+            border-radius: 1.5rem;
+            max-width: 500px;
+            width: 90%;
+            padding: 1.5rem;
+            border: 2px solid #ccff66;
+            color: #f0ffdc;
+        }
+        .modal-imagem-content { text-align: center; max-width: 90%; }
+        .modal-imagem-content img { max-width: 100%; max-height: 70vh; border-radius: 1rem; }
+        .detalhe-linha { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 0.6rem 0; 
+            border-bottom: 1px dashed #4a6e2e; 
+            font-size: 0.9rem; 
+        }
+        .detalhe-label { font-weight: 600; color: #c4e69a; }
+        .detalhe-valor { font-weight: 700; color: #feffc2; font-size: 1rem; }
+        .fechar-modal, .close-img {
+            background: #3d5e2b;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 2rem;
+            color: white;
+            font-weight: bold;
+            margin-top: 1rem;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .fechar-modal:hover, .close-img:hover { background: #5a8a3a; }
+        .loading { text-align: center; padding: 2rem; color: #dcffa3; }
+        .footer-note { text-align: center; margin-top: 1.5rem; color: #b3e675; font-size: 0.7rem; background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 30px; }
+        @media (max-width: 520px) { .cards-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
+        .debug-info { font-size: 0.7rem; color: #ffcc88; margin-top: 0.3rem; word-break: break-all; }
+        .instrucoes {
+            background: #2a3a1a;
+            border-left: 4px solid #ffcc66;
+            padding: 0.8rem;
+            margin-top: 1rem;
+            border-radius: 0.8rem;
+            font-size: 0.75rem;
+        }
+        .instrucoes a { color: #ccff66; }
+        .empty-month {
+            grid-column: 1/-1;
+            text-align: center;
+            background: rgba(0,0,0,0.5);
+            border-radius: 1.5rem;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-clipboard-list"></i> SEVIC/NBO · ESCALA SOBREAVISO</h1>
+        <p>Clique no card do servidor para ver detalhes mensais | Botão "Imagem" para visualizar foto do mês</p>
+    </div>
+    <div class="months-wrapper">
+        <div class="months-scroll" id="monthsContainer"><div class="loading">Carregando meses...</div></div>
+    </div>
+    <div class="image-btn-container">
+        <button class="btn-imagem" id="btnVisualizarImagem"><i class="fas fa-image"></i> Ver Imagem do Mês</button>
+    </div>
+    <div id="cardsGrid" class="cards-grid"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Carregando escala...</div></div>
+    <div class="footer-note">
+        <i class="fas fa-google"></i> Dados sincronizados com Google Planilha SEVIC/NBO<br>
+        <span id="connectionStatus">Conectando...</span>
+    </div>
+</div>
+
+<div id="detalheModal" class="modal"><div class="modal-content"><h3 id="modalServidorNome"></h3><div id="detalhesContainer"></div><button class="fechar-modal" onclick="fecharModal()">Fechar</button></div></div>
+<div id="imagemModal" class="modal-imagem"><div class="modal-imagem-content"><h4 id="imagemModalTitulo"></h4><img id="imagemModalImg" src="" alt="Imagem de referência"><div id="imagemDebugInfo" class="debug-info"></div><button class="close-img" onclick="fecharImagemModal()">Fechar</button></div></div>
+
+<script>
+    // URL do Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkAdaM_V9U91D6eyroojwYAB_J55uQp04jYedFZmkJ2U3ZKMSxhpkHV3Bd0oeQjqou/exec";
+    
+    // TODOS OS MESES DO ANO
+    const TODOS_MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+                         "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    
+    let escalaData = [];
+    let imagensData = [];
+    let currentMonth = "";
+    let mesesComDados = [];
+    
+    // ========== FUNÇÃO PARA OBTER O MÊS ATUAL ==========
+    function getMesAtual() {
+        const hoje = new Date();
+        const mesAtual = hoje.getMonth(); // 0 = Janeiro, 11 = Dezembro
+        return TODOS_MESES[mesAtual];
+    }
+    
+    // ========== FUNÇÃO PARA CONVERTER LINK DO GOOGLE DRIVE ==========
+    function converterLinkGoogleDrive(url) {
+        if (!url) return null;
+        
+        let strUrl = String(url).trim();
+        
+        // Extrai o ID do Google Drive
+        let match = strUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (!match) {
+            match = strUrl.match(/id=([a-zA-Z0-9_-]+)/);
+        }
+        if (!match) {
+            match = strUrl.match(/uc\?export=view&id=([a-zA-Z0-9_-]+)/);
+        }
+        
+        if (match && match[1]) {
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+        
+        // Se já for URL válida de imagem
+        if (strUrl.match(/^https?:\/\/(?!drive\.google\.com)/i)) {
+            return strUrl;
+        }
+        
+        return null;
+    }
+    
+    // Extrai ID do Google Drive
+    function extrairIdGoogleDrive(url) {
+        if (!url) return null;
+        let match = String(url).match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (!match) match = String(url).match(/id=([a-zA-Z0-9_-]+)/);
+        return match ? match[1] : null;
+    }
+    
+    // Função para converter data ISO para nome do mês
+    function converterDataParaMes(dataStr) {
+        if (!dataStr) return "";
+        
+        let data;
+        if (typeof dataStr === 'string') {
+            dataStr = dataStr.replace(/\.000z$/i, '').replace(/\.000Z$/, '');
+            data = new Date(dataStr);
+        } else {
+            data = new Date(dataStr);
+        }
+        
+        if (!isNaN(data.getTime())) {
+            return TODOS_MESES[data.getMonth()];
+        }
+        
+        // Se já for nome do mês, retorna
+        if (TODOS_MESES.includes(dataStr)) {
+            return dataStr;
+        }
+        
+        return dataStr;
+    }
+    
+    // Carregar dados do Google Apps Script
+    async function carregarDados() {
+        const statusSpan = document.getElementById("connectionStatus");
+        
+        try {
+            statusSpan.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Conectando à planilha...';
+            
+            const response = await fetch(SCRIPT_URL, {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'no-cache'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            console.log('📊 Dados recebidos da planilha:', data);
+            
+            if (data && data.escala && data.escala.length > 0) {
+                // Processa os dados da escala
+                escalaData = data.escala.map(item => {
+                    let mesConvertido = item.mes;
+                    
+                    // Tenta converter se for data
+                    if (mesConvertido && (mesConvertido.includes('T') || mesConvertido.includes('Z') || mesConvertido.includes('-') && mesConvertido.length > 5)) {
+                        mesConvertido = converterDataParaMes(mesConvertido);
+                    }
+                    
+                    return {
+                        id: item.id,
+                        mes: mesConvertido,
+                        servidor: item.servidor,
+                        p1: Number(item.p1) || 0,
+                        p2: Number(item.p2) || 0,
+                        totalGeral: Number(item.totalGeral) || 0,
+                        sabadoP1: Number(item.sabadoP1) || 0,
+                        sabadoP2: Number(item.sabadoP2) || 0,
+                        domingoP1: Number(item.domingoP1) || 0,
+                        domingoP2: Number(item.domingoP2) || 0,
+                        totalFDS: Number(item.totalFDS) || 0
+                    };
+                }).filter(item => item.servidor && item.mes);
+                
+                // Processa as imagens
+                imagensData = [];
+                if (data.imagens && data.imagens.length > 0) {
+                    for (let img of data.imagens) {
+                        let urlOriginal = img.imagem || img.url || img.link || img.Imagem;
+                        
+                        if (urlOriginal) {
+                            const urlConvertida = converterLinkGoogleDrive(urlOriginal);
+                            const idDrive = extrairIdGoogleDrive(urlOriginal);
+                            
+                            // Converte o mês da imagem também
+                            let mesImagem = img.mes;
+                            if (mesImagem && (mesImagem.includes('T') || mesImagem.includes('Z'))) {
+                                mesImagem = converterDataParaMes(mesImagem);
+                            }
+                            
+                            imagensData.push({
+                                id: img.id,
+                                mes: mesImagem,
+                                imagem: urlConvertida,
+                                urlOriginal: urlOriginal,
+                                idDrive: idDrive
+                            });
+                            
+                            console.log(`🖼️ Imagem para ${mesImagem}:`, urlConvertida || '❌ FALHA NA CONVERSÃO');
+                        }
+                    }
+                }
+                
+                // Identifica quais meses tem dados na escala
+                mesesComDados = [...new Set(escalaData.map(item => item.mes))];
+                
+                statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> Dados carregados!';
+                statusSpan.style.color = "#aaffaa";
+                return true;
+            } else {
+                throw new Error(data.erro || "Nenhum dado encontrado");
+            }
+        } catch (error) {
+            console.error("❌ Erro ao carregar dados:", error);
+            statusSpan.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro: ' + error.message;
+            statusSpan.style.color = "#ffaa66";
+            return false;
+        }
+    }
+    
+    // Renderizar botões dos meses - MOSTRA TODOS OS 12 MESES e seleciona o mês atual
+    function renderMeses() {
+        const container = document.getElementById("monthsContainer");
+        container.innerHTML = "";
+        
+        const mesAtual = getMesAtual();
+        
+        // Mostra TODOS os meses do ano
+        TODOS_MESES.forEach(month => {
+            const btn = document.createElement("button");
+            // Verifica se é o mês atual
+            const isCurrentMonth = (month === mesAtual);
+            btn.className = `month-btn ${month === currentMonth ? 'active' : ''}`;
+            
+            // Adiciona um ícone de estrela no mês atual
+            btn.innerHTML = `<i class="fas ${isCurrentMonth ? 'fa-star' : 'fa-calendar-alt'}"></i> ${month}`;
+            btn.title = isCurrentMonth ? `Mês atual - ${month}` : (mesesComDados.includes(month) ? `Tem ${escalaData.filter(s => s.mes === month).length} servidor(es)` : "Nenhum servidor cadastrado");
+            
+            btn.onclick = () => {
+                currentMonth = month;
+                renderMeses();
+                renderCards(currentMonth);
+            };
+            container.appendChild(btn);
+        });
+        
+        // Rola automaticamente para o mês atual, se necessário
+        setTimeout(() => {
+            const activeBtn = container.querySelector('.month-btn.active');
+            if (activeBtn) {
+                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }, 100);
+    }
+    
+    // Renderizar cards dos servidores
+    function renderCards(month) {
+        const grid = document.getElementById("cardsGrid");
+        const filtered = escalaData.filter(item => item.mes === month);
+        
+        if (filtered.length === 0) {
+            const mesAtual = getMesAtual();
+            const isCurrentMonth = (month === mesAtual);
+            grid.innerHTML = `<div class="empty-month">
+                <i class="fas fa-info-circle" style="font-size:2rem; color:#ccff66;"></i><br><br>
+                <strong>Nenhum servidor cadastrado para ${month}</strong><br><br>
+                ${isCurrentMonth ? '⚠️ O mês atual é ' + month + '. Adicione os servidores na aba "escala" da planilha Google.' : 'Para adicionar servidores, edite a aba "escala" da planilha Google.'}
+            </div>`;
+            return;
+        }
+        
+        grid.innerHTML = "";
+        filtered.forEach(serv => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+                <div class="servidor-nome"><i class="fas fa-user-circle"></i> ${serv.servidor}</div>
+                <div class="total-geral">${serv.totalGeral}</div>
+                <div class="total-label">Total Geral do Mês</div>
+            `;
+            card.onclick = () => abrirDetalhes(serv);
+            grid.appendChild(card);
+        });
+    }
+    
+    // Abrir modal com detalhes do servidor
+    function abrirDetalhes(servidor) {
+        document.getElementById("modalServidorNome").innerHTML = `<i class="fas fa-chart-line"></i> ${servidor.servidor} - ${servidor.mes}`;
+        document.getElementById("detalhesContainer").innerHTML = `
+            <div class="detalhe-linha"><span class="detalhe-label">P1 (total mês):</span><span class="detalhe-valor">${servidor.p1}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-label">P2 (total mês):</span><span class="detalhe-valor">${servidor.p2}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-label">Total Geral (mês):</span><span class="detalhe-valor">${servidor.totalGeral}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-label">Sábado P1:</span><span class="detalhe-valor">${servidor.sabadoP1}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-label">Sábado P2:</span><span class="detalhe-valor">${servidor.sabadoP2}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-label">Domingo P1:</span><span class="detalhe-valor">${servidor.domingoP1}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-label">Domingo P2:</span><span class="detalhe-valor">${servidor.domingoP2}</span></div>
+            <div class="detalhe-linha"><span class="detalhe-label">Total FDS (mês):</span><span class="detalhe-valor">${servidor.totalFDS}</span></div>
+        `;
+        document.getElementById("detalheModal").style.display = "flex";
+    }
+    
+    // Visualizar imagem do mês atual
+    function visualizarImagem() {
+        const imagemObj = imagensData.find(img => img.mes === currentMonth);
+        const debugDiv = document.getElementById("imagemDebugInfo");
+        
+        if (imagemObj && imagemObj.imagem) {
+            const imgElement = document.getElementById("imagemModalImg");
+            const tituloElement = document.getElementById("imagemModalTitulo");
+            
+            debugDiv.innerHTML = `<i class="fas fa-info-circle"></i> URL convertida: ${imagemObj.imagem.substring(0, 80)}...`;
+            tituloElement.innerHTML = `<i class="fas fa-spinner fa-pulse"></i> Carregando imagem de ${currentMonth}...`;
+            document.getElementById("imagemModal").style.display = "flex";
+            
+            imgElement.onload = function() {
+                tituloElement.innerHTML = `<i class="fas fa-image"></i> ${currentMonth} - Imagem carregada com sucesso!`;
+                debugDiv.innerHTML = `<i class="fas fa-check-circle"></i> Imagem carregada com sucesso!`;
+            };
+            
+            imgElement.onerror = function() {
+                tituloElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro ao carregar imagem`;
+                debugDiv.innerHTML = `
+                    <div class="instrucoes">
+                        <strong>⚠️ ERRO AO CARREGAR IMAGEM</strong><br><br>
+                        <strong>URL convertida:</strong><br>${imagemObj.imagem}<br><br>
+                        <strong>ID do arquivo:</strong> ${imagemObj.idDrive || 'não identificado'}<br><br>
+                        <strong>🔧 SOLUÇÃO:</strong><br>
+                        1. Abra o link original no navegador:<br>
+                        <a href="${imagemObj.urlOriginal || imagemObj.imagem}" target="_blank">${(imagemObj.urlOriginal || imagemObj.imagem).substring(0, 60)}...</a><br><br>
+                        2. Clique em <strong>"Compartilhar"</strong><br>
+                        3. Mude para <strong>"Qualquer pessoa com o link"</strong><br>
+                        4. Clique em <strong>"Concluído"</strong><br>
+                        5. Recarregue o aplicativo (F5)
+                    </div>
+                `;
+            };
+            
+            imgElement.src = imagemObj.imagem;
+        } else {
+            debugDiv.innerHTML = `
+                <div class="instrucoes">
+                    <strong>📷 NENHUMA IMAGEM ENCONTRADA PARA ${currentMonth}</strong><br><br>
+                    <strong>Como adicionar uma imagem:</strong><br><br>
+                    1. Na aba <strong>"imagem"</strong> da sua planilha<br>
+                    2. Adicione uma linha com o mês <strong>${currentMonth}</strong><br>
+                    3. Na coluna <strong>Imagem</strong>, cole o link:<br>
+                    <code>https://drive.google.com/file/d/SEU_ID/view?usp=sharing</code><br><br>
+                    4. <strong>COMPARTILHE A IMAGEM:</strong> Abra o link > Compartilhar > "Qualquer pessoa com o link"<br>
+                    5. Recarregue o aplicativo (F5)
+                </div>
+            `;
+            document.getElementById("imagemModalTitulo").innerHTML = `<i class="fas fa-image"></i> ${currentMonth} - Imagem não encontrada`;
+            document.getElementById("imagemModal").style.display = "flex";
+        }
+    }
+    
+    function fecharModal() { 
+        document.getElementById("detalheModal").style.display = "none"; 
+    }
+    
+    function fecharImagemModal() { 
+        document.getElementById("imagemModal").style.display = "none"; 
+        document.getElementById("imagemModalImg").src = "";
+        document.getElementById("imagemDebugInfo").innerHTML = "";
+    }
+    
+    window.onclick = function(event) {
+        if (event.target === document.getElementById("detalheModal")) fecharModal();
+        if (event.target === document.getElementById("imagemModal")) fecharImagemModal();
+    };
+    
+    async function init() {
+        await carregarDados();
+        
+        // Define o mês atual como o selecionado
+        currentMonth = getMesAtual();
+        
+        renderMeses();
+        renderCards(currentMonth);
+        document.getElementById("btnVisualizarImagem").onclick = visualizarImagem;
+    }
+    
+    init();
+</script>
+</body>
+</html>
