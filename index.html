@@ -12,18 +12,54 @@
             background: linear-gradient(135deg, #0a2a08 0%, #143d0a 50%, #1a4a0c 100%);
             min-height: 100vh;
             padding: 1rem;
+            position: relative;
+            overflow-x: hidden;
         }
-        body::before {
-            content: "";
+        
+        /* Fundo com texto SEVIC em cascata - AZUL NEON */
+        .watermark {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 20% 30%, rgba(210, 255, 100, 0.12), rgba(50, 180, 30, 0.04) 80%);
             pointer-events: none;
             z-index: 0;
+            overflow: hidden;
         }
+        
+        .watermark span {
+            position: absolute;
+            color: rgba(0, 150, 255, 0.08);
+            font-size: 4rem;
+            font-weight: 900;
+            white-space: nowrap;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 150, 255, 0.3), 0 0 20px rgba(0, 100, 255, 0.2);
+            animation: float 20s infinite linear;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 5px;
+        }
+        
+        .watermark span:nth-child(1) { top: 5%; left: -5%; font-size: 3.5rem; animation-duration: 25s; opacity: 0.06; transform: rotate(-15deg); }
+        .watermark span:nth-child(2) { top: 20%; left: 15%; font-size: 5rem; animation-duration: 30s; opacity: 0.05; transform: rotate(-8deg); }
+        .watermark span:nth-child(3) { top: 35%; left: -10%; font-size: 4.2rem; animation-duration: 22s; opacity: 0.07; transform: rotate(-20deg); }
+        .watermark span:nth-child(4) { top: 50%; left: 25%; font-size: 6rem; animation-duration: 35s; opacity: 0.04; transform: rotate(-5deg); }
+        .watermark span:nth-child(5) { top: 65%; left: -5%; font-size: 4.8rem; animation-duration: 28s; opacity: 0.06; transform: rotate(-12deg); }
+        .watermark span:nth-child(6) { top: 80%; left: 20%; font-size: 3.8rem; animation-duration: 32s; opacity: 0.05; transform: rotate(-18deg); }
+        .watermark span:nth-child(7) { top: 10%; right: -5%; font-size: 4.5rem; animation-duration: 27s; opacity: 0.06; transform: rotate(10deg); }
+        .watermark span:nth-child(8) { top: 40%; right: 5%; font-size: 5.5rem; animation-duration: 33s; opacity: 0.05; transform: rotate(5deg); }
+        .watermark span:nth-child(9) { top: 70%; right: -10%; font-size: 4rem; animation-duration: 24s; opacity: 0.07; transform: rotate(15deg); }
+        .watermark span:nth-child(10) { top: 15%; left: 40%; font-size: 3.2rem; animation-duration: 38s; opacity: 0.04; transform: rotate(-25deg); }
+        .watermark span:nth-child(11) { top: 55%; left: 50%; font-size: 4.5rem; animation-duration: 29s; opacity: 0.05; transform: rotate(8deg); }
+        .watermark span:nth-child(12) { top: 85%; left: 60%; font-size: 3.5rem; animation-duration: 26s; opacity: 0.06; transform: rotate(-10deg); }
+        
+        @keyframes float {
+            0% { transform: translateY(-10%) rotate(0deg); opacity: 0.04; }
+            50% { transform: translateY(10%) rotate(2deg); opacity: 0.08; }
+            100% { transform: translateY(-10%) rotate(0deg); opacity: 0.04; }
+        }
+        
         .container { max-width: 1200px; margin: 0 auto; position: relative; z-index: 2; }
         .header { text-align: center; margin-bottom: 1.5rem; }
         .header h1 {
@@ -84,8 +120,14 @@
             color: white;
             transform: scale(1.02);
         }
-        .image-btn-container { text-align: right; margin-bottom: 1rem; }
-        .btn-imagem {
+        .action-buttons-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .btn-acao {
             background: #2a5520;
             border: none;
             padding: 0.5rem 1.2rem;
@@ -99,7 +141,15 @@
             gap: 8px;
             transition: 0.2s;
         }
-        .btn-imagem:hover { background: #44832e; box-shadow: 0 0 8px #b3ff66; }
+        .btn-acao:hover { background: #44832e; box-shadow: 0 0 8px #b3ff66; }
+        .btn-atualizar {
+            background: #1a3a3a;
+            border: 1px solid #00aaff;
+        }
+        .btn-atualizar:hover { background: #0e5a5a; box-shadow: 0 0 8px #00aaff; }
+        .btn-imagem {
+            background: #2a5520;
+        }
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -142,7 +192,7 @@
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92);
+            background: rgba(0,0,0,0.95);
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -159,39 +209,35 @@
         }
         .modal-imagem-content { 
             text-align: center; 
-            max-width: 95%;
-            width: 95%;
-            max-height: 90vh;
+            max-width: 98%;
+            width: 98%;
+            max-height: 95vh;
             padding: 1rem;
             position: relative;
             overflow-y: auto;
-            background: rgba(0,0,0,0.9);
-            border: 2px solid #ccff66;
+            background: rgba(0,0,0,0.95);
+            border: 2px solid #00aaff;
         }
-        .modal-imagem-content img { 
-            max-width: 100%; 
-            max-height: 60vh; 
+        .drive-embed {
+            width: 100%;
+            height: 70vh;
+            border: none;
             border-radius: 1rem;
-            margin-top: 0.5rem;
-            object-fit: contain;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
+            background: #000;
         }
-        /* Botão "X" grande para celular */
         .close-modal-btn {
             position: absolute;
             top: 10px;
             right: 15px;
             background: rgba(0,0,0,0.8);
-            border: 2px solid #ff6666;
-            color: #ff6666;
-            font-size: 1.8rem;
+            border: 2px solid #ff4444;
+            color: #ff4444;
+            font-size: 2rem;
             font-weight: bold;
             cursor: pointer;
             border-radius: 50%;
-            width: 44px;
-            height: 44px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -200,28 +246,9 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         .close-modal-btn:active {
-            background: #ff6666;
+            background: #ff4444;
             color: white;
             transform: scale(0.95);
-        }
-        /* Botão fechar grande na parte inferior */
-        .close-img-bottom {
-            background: #3d5e2b;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 2rem;
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-            margin-top: 1rem;
-            margin-bottom: 0.5rem;
-            width: 80%;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .close-img-bottom:active {
-            background: #5a8a3a;
-            transform: scale(0.98);
         }
         .detalhe-linha { 
             display: flex; 
@@ -254,16 +281,12 @@
         }
         .fechar-modal:hover { background: #5a8a3a; }
         .loading { text-align: center; padding: 2rem; color: #dcffa3; }
-        .footer-note { text-align: center; margin-top: 1.5rem; color: #b3e675; font-size: 0.7rem; background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 30px; }
+        .footer-note { text-align: center; margin-top: 1.5rem; color: #b3e675; font-size: 0.7rem; background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 30px; position: relative; z-index: 2; }
         @media (max-width: 520px) { 
             .cards-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-            .close-modal-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 1.6rem;
-                top: 8px;
-                right: 8px;
-            }
+            .close-modal-btn { width: 45px; height: 45px; font-size: 1.8rem; top: 8px; right: 8px; }
+            .drive-embed { height: 55vh; }
+            .action-buttons-container { justify-content: center; }
         }
         .debug-info { font-size: 0.7rem; color: #ffcc88; margin-top: 0.3rem; word-break: break-all; }
         .instrucoes {
@@ -274,7 +297,6 @@
             border-radius: 0.8rem;
             font-size: 0.75rem;
         }
-        .instrucoes a { color: #ccff66; }
         .empty-month {
             grid-column: 1/-1;
             text-align: center;
@@ -282,23 +304,19 @@
             border-radius: 1.5rem;
             padding: 2rem;
         }
-        .swipe-instruction {
-            font-size: 0.7rem;
-            color: #aacc88;
-            margin-top: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        /* Loading spinner dentro do modal */
         .image-loading {
             padding: 2rem;
-            color: #ccff66;
+            color: #00aaff;
         }
     </style>
 </head>
 <body>
+<div class="watermark">
+    <span>SEVIC</span> <span>SEVIC</span> <span>SEVIC</span> <span>SEVIC</span>
+    <span>SEVIC</span> <span>SEVIC</span> <span>SEVIC</span> <span>SEVIC</span>
+    <span>SEVIC</span> <span>SEVIC</span> <span>SEVIC</span> <span>SEVIC</span>
+</div>
+
 <div class="container">
     <div class="header">
         <h1><i class="fas fa-clipboard-list"></i> SEVIC/NBO · ESCALA SOBREAVISO</h1>
@@ -307,9 +325,16 @@
     <div class="months-wrapper">
         <div class="months-scroll" id="monthsContainer"><div class="loading">Carregando meses...</div></div>
     </div>
-    <div class="image-btn-container">
-        <button class="btn-imagem" id="btnVisualizarImagem"><i class="fas fa-image"></i> Ver Imagem do Mês</button>
+    
+    <div class="action-buttons-container">
+        <button class="btn-acao btn-atualizar" id="btnAtualizar" onclick="atualizarPagina()">
+            <i class="fas fa-sync-alt"></i> Atualizar
+        </button>
+        <button class="btn-acao btn-imagem" id="btnVisualizarImagem">
+            <i class="fas fa-image"></i> Ver Imagem do Mês
+        </button>
     </div>
+    
     <div id="cardsGrid" class="cards-grid"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Carregando escala...</div></div>
     <div class="footer-note">
         <i class="fas fa-google"></i> Dados sincronizados com Google Planilha SEVIC/NBO<br>
@@ -319,78 +344,49 @@
 
 <div id="detalheModal" class="modal"><div class="modal-content"><h3 id="modalServidorNome"></h3><div id="detalhesContainer"></div><button class="fechar-modal" onclick="fecharModal()">Fechar</button></div></div>
 
-<!-- Modal de Imagem - Agora com iframe como fallback -->
+<!-- Modal de Imagem - Apenas com botão X para fechar -->
 <div id="imagemModal" class="modal-imagem">
     <div class="modal-imagem-content" id="imagemModalContent">
-        <button class="close-modal-btn" id="closeImageXBtn" onclick="fecharImagemModal()">&times;</button>
-        <h4 id="imagemModalTitulo"></h4>
+        <button class="close-modal-btn" onclick="fecharImagemModal()">&times;</button>
+        <h4 id="imagemModalTitulo" style="color:#00aaff;"></h4>
         <div id="imagemContainer">
-            <img id="imagemModalImg" src="" alt="Imagem de referência" style="display: none;">
+            <iframe id="driveIframe" class="drive-embed" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             <div id="imageLoadingSpinner" class="image-loading" style="display: none;">
-                <i class="fas fa-spinner fa-pulse fa-2x"></i><br>Carregando imagem...
+                <i class="fas fa-spinner fa-pulse fa-3x"></i><br>Carregando imagem...
             </div>
             <div id="imageErrorDiv" style="display: none;">
                 <div class="instrucoes" id="errorInstructions"></div>
             </div>
-        </div>
-        <button class="close-img-bottom" onclick="fecharImagemModal()"><i class="fas fa-times-circle"></i> FECHAR IMAGEM</button>
-        <div class="swipe-instruction">
-            <i class="fas fa-arrow-down"></i> Deslize para baixo ou toque no X para fechar
         </div>
         <div id="imagemDebugInfo" class="debug-info"></div>
     </div>
 </div>
 
 <script>
-    // URL do Google Apps Script
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkAdaM_V9U91D6eyroojwYAB_J55uQp04jYedFZmkJ2U3ZKMSxhpkHV3Bd0oeQjqou/exec";
     
-    // TODOS OS MESES DO ANO
     const TODOS_MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
                          "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
     
     let escalaData = [];
-    let imagensData = [];
     let currentMonth = "";
     let mesesComDados = [];
-    
     let touchStartY = 0;
     
-    // ========== FUNÇÃO MELHORADA PARA CONVERTER LINK DO GOOGLE DRIVE PARA IMAGEM DIRETA ==========
-    function converterLinkGoogleDriveImagemDireta(url) {
-        if (!url) return null;
-        
-        let strUrl = String(url).trim();
-        
-        // Extrai o ID do Google Drive
-        let idMatch = strUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-        if (!idMatch) {
-            idMatch = strUrl.match(/id=([a-zA-Z0-9_-]+)/);
-        }
-        if (!idMatch) {
-            idMatch = strUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        }
-        
-        if (idMatch && idMatch[1]) {
-            const fileId = idMatch[1];
-            // URL direta da imagem - NÃO redireciona para página do Google Drive
-            return `https://drive.google.com/uc?export=view&id=${fileId}`;
-        }
-        
-        // Verifica se já é uma URL de imagem direta
-        if (strUrl.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
-            return strUrl;
-        }
-        
-        return null;
-    }
+    const MAPEAMENTO_IMAGENS = {
+        "maio": "https://drive.google.com/file/d/16o2WQfHydMRloZV3gAdX5TW5L-AQFJ3N/preview",
+        "junho": "https://drive.google.com/file/d/1YMdVyzllVez-VtvnFgRqVi-As9QwAtXA/preview",
+        "julho": "https://drive.google.com/file/d/1By--5Lacv83lRWQDQ7OCswulRfaYL8tU/preview",
+        "agosto": "https://drive.google.com/file/d/1ZujM-HZQBvmQx63OvFQ52N-BFF_JOwri/preview",
+        "setembro": "https://drive.google.com/file/d/1_iK7uRehITb5dxqxnIb-rfmeFUFFbXFI/preview",
+        "outubro": "https://drive.google.com/file/d/1fyXM9WR7fD3LiAFzrPlOX3nh8pddPp-R/preview",
+        "novembro": "https://drive.google.com/file/d/1Zp4NGjSH6BYgVYc18fIuSsj_7YhgZ2G-/preview",
+        "dezembro": "https://drive.google.com/file/d/1zktqbE6jUSdryLw1D1e6cThFkF55liyS/preview"
+    };
     
-    function extrairIdGoogleDrive(url) {
-        if (!url) return null;
-        let match = String(url).match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-        if (!match) match = String(url).match(/id=([a-zA-Z0-9_-]+)/);
-        if (!match) match = String(url).match(/\/d\/([a-zA-Z0-9_-]+)/);
-        return match ? match[1] : null;
+    function getUrlEmbed(mes) {
+        const mesLower = mes.toLowerCase();
+        return MAPEAMENTO_IMAGENS[mesLower] || null;
     }
     
     function getMesAtual() {
@@ -400,7 +396,6 @@
     
     function converterDataParaMes(dataStr) {
         if (!dataStr) return "";
-        
         let data;
         if (typeof dataStr === 'string') {
             dataStr = dataStr.replace(/\.000z$/i, '').replace(/\.000Z$/, '');
@@ -408,47 +403,30 @@
         } else {
             data = new Date(dataStr);
         }
-        
         if (!isNaN(data.getTime())) {
             return TODOS_MESES[data.getMonth()];
         }
-        
         if (TODOS_MESES.includes(dataStr)) {
             return dataStr;
         }
-        
         return dataStr;
     }
     
-    // Carregar dados do Google Apps Script
     async function carregarDados() {
         const statusSpan = document.getElementById("connectionStatus");
-        
         try {
             statusSpan.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Conectando à planilha...';
-            
-            const response = await fetch(SCRIPT_URL, {
-                method: 'GET',
-                mode: 'cors',
-                cache: 'no-cache'
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
+            const response = await fetch(SCRIPT_URL, { method: 'GET', mode: 'cors', cache: 'no-cache' });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
-            
-            console.log('📊 Dados recebidos da planilha:', data);
+            console.log('📊 Dados recebidos:', data);
             
             if (data && data.escala && data.escala.length > 0) {
                 escalaData = data.escala.map(item => {
                     let mesConvertido = item.mes;
-                    
-                    if (mesConvertido && (mesConvertido.includes('T') || mesConvertido.includes('Z') || mesConvertido.includes('-') && mesConvertido.length > 5)) {
+                    if (mesConvertido && (mesConvertido.includes('T') || mesConvertido.includes('Z'))) {
                         mesConvertido = converterDataParaMes(mesConvertido);
                     }
-                    
                     return {
                         id: item.id,
                         mes: mesConvertido,
@@ -466,36 +444,7 @@
                     };
                 }).filter(item => item.servidor && item.mes);
                 
-                imagensData = [];
-                if (data.imagens && data.imagens.length > 0) {
-                    for (let img of data.imagens) {
-                        let urlOriginal = img.imagem || img.url || img.link || img.Imagem;
-                        
-                        if (urlOriginal) {
-                            // Usa a função melhorada para obter URL direta da imagem
-                            const urlDireta = converterLinkGoogleDriveImagemDireta(urlOriginal);
-                            const idDrive = extrairIdGoogleDrive(urlOriginal);
-                            
-                            let mesImagem = img.mes;
-                            if (mesImagem && (mesImagem.includes('T') || mesImagem.includes('Z'))) {
-                                mesImagem = converterDataParaMes(mesImagem);
-                            }
-                            
-                            imagensData.push({
-                                id: img.id,
-                                mes: mesImagem,
-                                imagem: urlDireta,
-                                urlOriginal: urlOriginal,
-                                idDrive: idDrive
-                            });
-                            
-                            console.log(`🖼️ Imagem para ${mesImagem}:`, urlDireta || '❌ Falha na conversão');
-                        }
-                    }
-                }
-                
                 mesesComDados = [...new Set(escalaData.map(item => item.mes))];
-                
                 statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> Dados carregados!';
                 statusSpan.style.color = "#aaffaa";
                 return true;
@@ -503,7 +452,7 @@
                 throw new Error(data.erro || "Nenhum dado encontrado");
             }
         } catch (error) {
-            console.error("❌ Erro ao carregar dados:", error);
+            console.error("❌ Erro:", error);
             statusSpan.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro: ' + error.message;
             statusSpan.style.color = "#ffaa66";
             return false;
@@ -513,57 +462,33 @@
     function renderMeses() {
         const container = document.getElementById("monthsContainer");
         container.innerHTML = "";
-        
         const mesAtual = getMesAtual();
-        
         TODOS_MESES.forEach(month => {
             const btn = document.createElement("button");
             const isCurrentMonth = (month === mesAtual);
             btn.className = `month-btn ${month === currentMonth ? 'active' : ''}`;
-            
             btn.innerHTML = `<i class="fas ${isCurrentMonth ? 'fa-star' : 'fa-calendar-alt'}"></i> ${month}`;
-            btn.title = isCurrentMonth ? `Mês atual - ${month}` : (mesesComDados.includes(month) ? `Tem ${escalaData.filter(s => s.mes === month).length} servidor(es)` : "Nenhum servidor cadastrado");
-            
-            btn.onclick = () => {
-                currentMonth = month;
-                renderMeses();
-                renderCards(currentMonth);
-            };
+            btn.onclick = () => { currentMonth = month; renderMeses(); renderCards(currentMonth); };
             container.appendChild(btn);
         });
-        
         setTimeout(() => {
             const activeBtn = container.querySelector('.month-btn.active');
-            if (activeBtn) {
-                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
+            if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }, 100);
     }
     
     function renderCards(month) {
         const grid = document.getElementById("cardsGrid");
         const filtered = escalaData.filter(item => item.mes === month);
-        
         if (filtered.length === 0) {
-            const mesAtual = getMesAtual();
-            const isCurrentMonth = (month === mesAtual);
-            grid.innerHTML = `<div class="empty-month">
-                <i class="fas fa-info-circle" style="font-size:2rem; color:#ccff66;"></i><br><br>
-                <strong>Nenhum servidor cadastrado para ${month}</strong><br><br>
-                ${isCurrentMonth ? '⚠️ O mês atual é ' + month + '. Adicione os servidores na aba "escala" da planilha Google.' : 'Para adicionar servidores, edite a aba "escala" da planilha Google.'}
-            </div>`;
+            grid.innerHTML = `<div class="empty-month"><i class="fas fa-info-circle" style="font-size:2rem; color:#ccff66;"></i><br><br><strong>Nenhum servidor cadastrado para ${month}</strong></div>`;
             return;
         }
-        
         grid.innerHTML = "";
         filtered.forEach(serv => {
             const card = document.createElement("div");
             card.className = "card";
-            card.innerHTML = `
-                <div class="servidor-nome"><i class="fas fa-user-circle"></i> ${serv.servidor}</div>
-                <div class="total-geral">${serv.totalGeral}</div>
-                <div class="total-label">Total Geral do Mês</div>
-            `;
+            card.innerHTML = `<div class="servidor-nome"><i class="fas fa-user-circle"></i> ${serv.servidor}</div><div class="total-geral">${serv.totalGeral}</div><div class="total-label">Total Geral do Mês</div>`;
             card.onclick = () => abrirDetalhes(serv);
             grid.appendChild(card);
         });
@@ -578,7 +503,6 @@
     
     function abrirDetalhes(servidor) {
         document.getElementById("modalServidorNome").innerHTML = `<i class="fas fa-chart-line"></i> ${servidor.servidor} - ${servidor.mes}`;
-        
         document.getElementById("detalhesContainer").innerHTML = `
             <div class="detalhe-linha"><span class="detalhe-label">P1 (total mês):</span><span class="detalhe-valor">${servidor.p1}</span></div>
             <div class="detalhe-linha"><span class="detalhe-label">P2 (total mês):</span><span class="detalhe-valor">${servidor.p2}</span></div>
@@ -588,82 +512,61 @@
             <div class="detalhe-linha"><span class="detalhe-label">Domingo P1:</span><span class="detalhe-valor">${servidor.domingoP1}</span></div>
             <div class="detalhe-linha"><span class="detalhe-label">Domingo P2:</span><span class="detalhe-valor">${servidor.domingoP2}</span></div>
             <div class="detalhe-linha"><span class="detalhe-label">Total FDS (mês):</span><span class="detalhe-valor">${servidor.totalFDS}</span></div>
-            
             <div style="margin: 0.5rem 0; border-top: 2px solid #5a7a3a; margin-top: 0.3rem;"></div>
-            
-            <div class="detalhe-linha ferias-destaque">
-                <span class="detalhe-label"><i class="fas fa-umbrella-beach"></i> Férias (Início):</span>
-                <span class="detalhe-valor">${formatarFerias(servidor.feriasInicio)}</span>
-            </div>
-            <div class="detalhe-linha ferias-destaque">
-                <span class="detalhe-label"><i class="fas fa-calendar-check"></i> Férias (Fim):</span>
-                <span class="detalhe-valor">${formatarFerias(servidor.feriasFinal)}</span>
-            </div>
+            <div class="detalhe-linha ferias-destaque"><span class="detalhe-label"><i class="fas fa-umbrella-beach"></i> Férias (Início):</span><span class="detalhe-valor">${formatarFerias(servidor.feriasInicio)}</span></div>
+            <div class="detalhe-linha ferias-destaque"><span class="detalhe-label"><i class="fas fa-calendar-check"></i> Férias (Fim):</span><span class="detalhe-valor">${formatarFerias(servidor.feriasFinal)}</span></div>
         `;
         document.getElementById("detalheModal").style.display = "flex";
     }
     
-    // Função para carregar imagem DENTRO do modal sem abrir link externo
     function visualizarImagem() {
-        const imagemObj = imagensData.find(img => img.mes === currentMonth);
-        const debugDiv = document.getElementById("imagemDebugInfo");
-        const imgElement = document.getElementById("imagemModalImg");
+        const urlEmbed = getUrlEmbed(currentMonth);
+        const iframe = document.getElementById("driveIframe");
         const loadingSpinner = document.getElementById("imageLoadingSpinner");
         const errorDiv = document.getElementById("imageErrorDiv");
         const tituloElement = document.getElementById("imagemModalTitulo");
+        const debugDiv = document.getElementById("imagemDebugInfo");
         
-        // Reset dos elementos
-        imgElement.style.display = "none";
+        iframe.style.display = "none";
         loadingSpinner.style.display = "none";
         errorDiv.style.display = "none";
         debugDiv.innerHTML = "";
+        iframe.src = "";
         
-        if (imagemObj && imagemObj.imagem) {
+        if (urlEmbed) {
             tituloElement.innerHTML = `<i class="fas fa-image"></i> ${currentMonth}`;
             loadingSpinner.style.display = "block";
+            iframe.style.display = "block";
             
-            imgElement.onload = function() {
+            iframe.onload = function() {
                 loadingSpinner.style.display = "none";
-                imgElement.style.display = "block";
-                debugDiv.innerHTML = `<i class="fas fa-check-circle"></i> Imagem carregada com sucesso!<br>👆 Toque no X ou no botão FECHAR para sair.`;
+                debugDiv.innerHTML = `<i class="fas fa-check-circle"></i> Imagem carregada! Toque no X para sair.`;
             };
             
-            imgElement.onerror = function() {
+            iframe.onerror = function() {
                 loadingSpinner.style.display = "none";
+                iframe.style.display = "none";
                 errorDiv.style.display = "block";
-                const errorInstructions = document.getElementById("errorInstructions");
-                errorInstructions.innerHTML = `
+                document.getElementById("errorInstructions").innerHTML = `
                     <strong>⚠️ ERRO AO CARREGAR IMAGEM</strong><br><br>
-                    <strong>URL da imagem:</strong><br>
-                    <code style="font-size: 0.7rem; word-break: break-all;">${imagemObj.imagem}</code><br><br>
                     <strong>🔧 SOLUÇÃO:</strong><br>
-                    1. Verifique se o link está correto na planilha<br>
-                    2. Certifique-se de que a imagem está compartilhada publicamente<br>
-                    3. No Google Drive, clique com botão direito na imagem > "Compartilhar" > "Qualquer pessoa com o link"<br>
-                    4. Copie o link novamente e atualize na planilha<br><br>
-                    <strong>Link original da planilha:</strong><br>
-                    <a href="${imagemObj.urlOriginal}" target="_blank" rel="noopener noreferrer">Clique aqui para abrir no Google Drive</a>
+                    1. Verifique se a imagem está compartilhada publicamente no Google Drive<br>
+                    2. No Google Drive, clique com botão direito na imagem > "Compartilhar"<br>
+                    3. Mude para <strong>"Qualquer pessoa com o link"</strong><br>
+                    4. Clique em "Concluído"<br>
+                    5. Recarregue o aplicativo
                 `;
-                debugDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Falha ao carregar a imagem. Verifique as instruções acima.`;
             };
             
-            imgElement.src = imagemObj.imagem;
+            iframe.src = urlEmbed;
             document.getElementById("imagemModal").style.display = "flex";
-            
         } else {
             tituloElement.innerHTML = `<i class="fas fa-image"></i> ${currentMonth} - Imagem não encontrada`;
             errorDiv.style.display = "block";
-            const errorInstructions = document.getElementById("errorInstructions");
-            errorInstructions.innerHTML = `
-                <strong>📷 NENHUMA IMAGEM ENCONTRADA PARA ${currentMonth}</strong><br><br>
-                <strong>Como adicionar uma imagem:</strong><br><br>
-                1. Na aba <strong>"imagem"</strong> da sua planilha<br>
-                2. Adicione uma linha com o mês <strong>${currentMonth}</strong><br>
-                3. Na coluna <strong>Imagem</strong>, cole o link do Google Drive:<br>
-                <code>https://drive.google.com/file/d/SEU_ID_DO_ARQUIVO/view</code><br><br>
-                4. <strong>COMPARTILHE A IMAGEM:</strong><br>
-                Abra o link > Clique em "Compartilhar" > Mude para "Qualquer pessoa com o link"<br><br>
-                5. Recarregue o aplicativo (F5)
+            document.getElementById("errorInstructions").innerHTML = `
+                <strong>📷 NENHUMA IMAGEM CONFIGURADA PARA ${currentMonth}</strong><br><br>
+                <strong>Mapeamento disponível para:</strong><br>
+                Maio, Junho, Julho, Agosto, Setembro, Outubro, Novembro, Dezembro
             `;
             document.getElementById("imagemModal").style.display = "flex";
         }
@@ -675,44 +578,37 @@
     
     function fecharImagemModal() { 
         document.getElementById("imagemModal").style.display = "none"; 
-        // Limpa a imagem para não ficar em cache
-        const imgElement = document.getElementById("imagemModalImg");
-        imgElement.src = "";
-        imgElement.style.display = "none";
+        const iframe = document.getElementById("driveIframe");
+        iframe.src = "";
+        iframe.style.display = "none";
         document.getElementById("imageLoadingSpinner").style.display = "none";
         document.getElementById("imageErrorDiv").style.display = "none";
         document.getElementById("imagemDebugInfo").innerHTML = "";
         touchStartY = 0;
     }
     
-    // Swipe para fechar
+    function atualizarPagina() {
+        window.location.reload();
+    }
+    
     function setupSwipeToClose() {
         const modalContent = document.getElementById("imagemModalContent");
         if (!modalContent) return;
-        
-        modalContent.addEventListener('touchstart', function(e) {
-            touchStartY = e.touches[0].clientY;
+        modalContent.addEventListener('touchstart', function(e) { 
+            touchStartY = e.touches[0].clientY; 
         }, { passive: true });
-        
         modalContent.addEventListener('touchmove', function(e) {
             const touchEndY = e.touches[0].clientY;
-            const diffY = touchEndY - touchStartY;
-            if (diffY > 60) {
-                fecharImagemModal();
-            }
+            if ((touchEndY - touchStartY) > 60) fecharImagemModal();
         }, { passive: true });
     }
     
-    // Previne o fechamento do app com a seta de voltar
     window.addEventListener('popstate', function(event) {
-        const imagemModal = document.getElementById("imagemModal");
-        const detalheModal = document.getElementById("detalheModal");
-        
-        if (imagemModal.style.display === "flex") {
+        if (document.getElementById("imagemModal").style.display === "flex") {
             fecharImagemModal();
             history.pushState(null, null, window.location.href);
             event.preventDefault();
-        } else if (detalheModal.style.display === "flex") {
+        } else if (document.getElementById("detalheModal").style.display === "flex") {
             fecharModal();
             history.pushState(null, null, window.location.href);
             event.preventDefault();
@@ -722,10 +618,8 @@
     history.pushState(null, null, window.location.href);
     
     window.onclick = function(event) {
-        const modal = document.getElementById("detalheModal");
-        const imagemModal = document.getElementById("imagemModal");
-        if (event.target === modal) fecharModal();
-        if (event.target === imagemModal) fecharImagemModal();
+        if (event.target === document.getElementById("detalheModal")) fecharModal();
+        if (event.target === document.getElementById("imagemModal")) fecharImagemModal();
     };
     
     async function init() {
