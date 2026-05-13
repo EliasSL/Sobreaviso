@@ -142,8 +142,7 @@
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.92);
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -166,22 +165,27 @@
             padding: 1rem;
             position: relative;
             overflow-y: auto;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #ccff66;
         }
         .modal-imagem-content img { 
             max-width: 100%; 
-            max-height: 55vh; 
+            max-height: 60vh; 
             border-radius: 1rem;
             margin-top: 0.5rem;
             object-fit: contain;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
-        /* Botão "X" maior para celular */
+        /* Botão "X" grande para celular */
         .close-modal-btn {
             position: absolute;
             top: 10px;
             right: 15px;
-            background: rgba(0,0,0,0.7);
-            border: 2px solid #ccff66;
-            color: #ccff66;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #ff6666;
+            color: #ff6666;
             font-size: 1.8rem;
             font-weight: bold;
             cursor: pointer;
@@ -196,8 +200,8 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         .close-modal-btn:active {
-            background: #ccff55;
-            color: #0a3a02;
+            background: #ff6666;
+            color: white;
             transform: scale(0.95);
         }
         /* Botão fechar grande na parte inferior */
@@ -278,7 +282,6 @@
             border-radius: 1.5rem;
             padding: 2rem;
         }
-        /* Instrução de swipe para fechar */
         .swipe-instruction {
             font-size: 0.7rem;
             color: #aacc88;
@@ -287,6 +290,11 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+        }
+        /* Loading spinner dentro do modal */
+        .image-loading {
+            padding: 2rem;
+            color: #ccff66;
         }
     </style>
 </head>
@@ -311,15 +319,23 @@
 
 <div id="detalheModal" class="modal"><div class="modal-content"><h3 id="modalServidorNome"></h3><div id="detalhesContainer"></div><button class="fechar-modal" onclick="fecharModal()">Fechar</button></div></div>
 
-<!-- Modal de Imagem com múltiplas formas de fechar -->
+<!-- Modal de Imagem - Agora com iframe como fallback -->
 <div id="imagemModal" class="modal-imagem">
     <div class="modal-imagem-content" id="imagemModalContent">
         <button class="close-modal-btn" id="closeImageXBtn" onclick="fecharImagemModal()">&times;</button>
         <h4 id="imagemModalTitulo"></h4>
-        <img id="imagemModalImg" src="" alt="Imagem de referência">
+        <div id="imagemContainer">
+            <img id="imagemModalImg" src="" alt="Imagem de referência" style="display: none;">
+            <div id="imageLoadingSpinner" class="image-loading" style="display: none;">
+                <i class="fas fa-spinner fa-pulse fa-2x"></i><br>Carregando imagem...
+            </div>
+            <div id="imageErrorDiv" style="display: none;">
+                <div class="instrucoes" id="errorInstructions"></div>
+            </div>
+        </div>
         <button class="close-img-bottom" onclick="fecharImagemModal()"><i class="fas fa-times-circle"></i> FECHAR IMAGEM</button>
         <div class="swipe-instruction">
-            <i class="fas fa-arrow-down"></i> Deslize para baixo ou toque fora para fechar
+            <i class="fas fa-arrow-down"></i> Deslize para baixo ou toque no X para fechar
         </div>
         <div id="imagemDebugInfo" class="debug-info"></div>
     </div>
@@ -338,36 +354,31 @@
     let currentMonth = "";
     let mesesComDados = [];
     
-    // Variáveis para controle do swipe
     let touchStartY = 0;
-    let touchEndY = 0;
     
-    // ========== FUNÇÃO PARA OBTER O MÊS ATUAL ==========
-    function getMesAtual() {
-        const hoje = new Date();
-        const mesAtual = hoje.getMonth();
-        return TODOS_MESES[mesAtual];
-    }
-    
-    // ========== FUNÇÃO PARA CONVERTER LINK DO GOOGLE DRIVE ==========
-    function converterLinkGoogleDrive(url) {
+    // ========== FUNÇÃO MELHORADA PARA CONVERTER LINK DO GOOGLE DRIVE PARA IMAGEM DIRETA ==========
+    function converterLinkGoogleDriveImagemDireta(url) {
         if (!url) return null;
         
         let strUrl = String(url).trim();
         
-        let match = strUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-        if (!match) {
-            match = strUrl.match(/id=([a-zA-Z0-9_-]+)/);
+        // Extrai o ID do Google Drive
+        let idMatch = strUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (!idMatch) {
+            idMatch = strUrl.match(/id=([a-zA-Z0-9_-]+)/);
         }
-        if (!match) {
-            match = strUrl.match(/uc\?export=view&id=([a-zA-Z0-9_-]+)/);
-        }
-        
-        if (match && match[1]) {
-            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        if (!idMatch) {
+            idMatch = strUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
         }
         
-        if (strUrl.match(/^https?:\/\/(?!drive\.google\.com)/i)) {
+        if (idMatch && idMatch[1]) {
+            const fileId = idMatch[1];
+            // URL direta da imagem - NÃO redireciona para página do Google Drive
+            return `https://drive.google.com/uc?export=view&id=${fileId}`;
+        }
+        
+        // Verifica se já é uma URL de imagem direta
+        if (strUrl.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
             return strUrl;
         }
         
@@ -378,7 +389,13 @@
         if (!url) return null;
         let match = String(url).match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
         if (!match) match = String(url).match(/id=([a-zA-Z0-9_-]+)/);
+        if (!match) match = String(url).match(/\/d\/([a-zA-Z0-9_-]+)/);
         return match ? match[1] : null;
+    }
+    
+    function getMesAtual() {
+        const hoje = new Date();
+        return TODOS_MESES[hoje.getMonth()];
     }
     
     function converterDataParaMes(dataStr) {
@@ -455,7 +472,8 @@
                         let urlOriginal = img.imagem || img.url || img.link || img.Imagem;
                         
                         if (urlOriginal) {
-                            const urlConvertida = converterLinkGoogleDrive(urlOriginal);
+                            // Usa a função melhorada para obter URL direta da imagem
+                            const urlDireta = converterLinkGoogleDriveImagemDireta(urlOriginal);
                             const idDrive = extrairIdGoogleDrive(urlOriginal);
                             
                             let mesImagem = img.mes;
@@ -466,19 +484,17 @@
                             imagensData.push({
                                 id: img.id,
                                 mes: mesImagem,
-                                imagem: urlConvertida,
+                                imagem: urlDireta,
                                 urlOriginal: urlOriginal,
                                 idDrive: idDrive
                             });
                             
-                            console.log(`🖼️ Imagem para ${mesImagem}:`, urlConvertida || '❌ FALHA NA CONVERSÃO');
+                            console.log(`🖼️ Imagem para ${mesImagem}:`, urlDireta || '❌ Falha na conversão');
                         }
                     }
                 }
                 
                 mesesComDados = [...new Set(escalaData.map(item => item.mes))];
-                
-                console.log('📋 Primeiro servidor com dados de férias:', escalaData.find(s => s.feriasInicio || s.feriasFinal));
                 
                 statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> Dados carregados!';
                 statusSpan.style.color = "#aaffaa";
@@ -561,10 +577,6 @@
     }
     
     function abrirDetalhes(servidor) {
-        console.log('🔍 Detalhes do servidor:', servidor);
-        console.log('📅 Férias Início:', servidor.feriasInicio);
-        console.log('📅 Férias Final:', servidor.feriasFinal);
-        
         document.getElementById("modalServidorNome").innerHTML = `<i class="fas fa-chart-line"></i> ${servidor.servidor} - ${servidor.mes}`;
         
         document.getElementById("detalhesContainer").innerHTML = `
@@ -591,56 +603,68 @@
         document.getElementById("detalheModal").style.display = "flex";
     }
     
+    // Função para carregar imagem DENTRO do modal sem abrir link externo
     function visualizarImagem() {
         const imagemObj = imagensData.find(img => img.mes === currentMonth);
         const debugDiv = document.getElementById("imagemDebugInfo");
+        const imgElement = document.getElementById("imagemModalImg");
+        const loadingSpinner = document.getElementById("imageLoadingSpinner");
+        const errorDiv = document.getElementById("imageErrorDiv");
+        const tituloElement = document.getElementById("imagemModalTitulo");
+        
+        // Reset dos elementos
+        imgElement.style.display = "none";
+        loadingSpinner.style.display = "none";
+        errorDiv.style.display = "none";
+        debugDiv.innerHTML = "";
         
         if (imagemObj && imagemObj.imagem) {
-            const imgElement = document.getElementById("imagemModalImg");
-            const tituloElement = document.getElementById("imagemModalTitulo");
-            
-            debugDiv.innerHTML = `<i class="fas fa-info-circle"></i> URL convertida: ${imagemObj.imagem.substring(0, 80)}...`;
-            tituloElement.innerHTML = `<i class="fas fa-spinner fa-pulse"></i> Carregando imagem de ${currentMonth}...`;
-            document.getElementById("imagemModal").style.display = "flex";
+            tituloElement.innerHTML = `<i class="fas fa-image"></i> ${currentMonth}`;
+            loadingSpinner.style.display = "block";
             
             imgElement.onload = function() {
-                tituloElement.innerHTML = `<i class="fas fa-image"></i> ${currentMonth} - Imagem carregada com sucesso!`;
-                debugDiv.innerHTML = `<i class="fas fa-check-circle"></i> Imagem carregada com sucesso!<br>👆 Toque no X ou no botão FECHAR, ou deslize para baixo para fechar.`;
+                loadingSpinner.style.display = "none";
+                imgElement.style.display = "block";
+                debugDiv.innerHTML = `<i class="fas fa-check-circle"></i> Imagem carregada com sucesso!<br>👆 Toque no X ou no botão FECHAR para sair.`;
             };
             
             imgElement.onerror = function() {
-                tituloElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro ao carregar imagem`;
-                debugDiv.innerHTML = `
-                    <div class="instrucoes">
-                        <strong>⚠️ ERRO AO CARREGAR IMAGEM</strong><br><br>
-                        <strong>URL convertida:</strong><br>${imagemObj.imagem}<br><br>
-                        <strong>ID do arquivo:</strong> ${imagemObj.idDrive || 'não identificado'}<br><br>
-                        <strong>🔧 SOLUÇÃO:</strong><br>
-                        1. Abra o link original no navegador:<br>
-                        <a href="${imagemObj.urlOriginal || imagemObj.imagem}" target="_blank">${(imagemObj.urlOriginal || imagemObj.imagem).substring(0, 60)}...</a><br><br>
-                        2. Clique em <strong>"Compartilhar"</strong><br>
-                        3. Mude para <strong>"Qualquer pessoa com o link"</strong><br>
-                        4. Clique em <strong>"Concluído"</strong><br>
-                        5. Recarregue o aplicativo (F5)
-                    </div>
+                loadingSpinner.style.display = "none";
+                errorDiv.style.display = "block";
+                const errorInstructions = document.getElementById("errorInstructions");
+                errorInstructions.innerHTML = `
+                    <strong>⚠️ ERRO AO CARREGAR IMAGEM</strong><br><br>
+                    <strong>URL da imagem:</strong><br>
+                    <code style="font-size: 0.7rem; word-break: break-all;">${imagemObj.imagem}</code><br><br>
+                    <strong>🔧 SOLUÇÃO:</strong><br>
+                    1. Verifique se o link está correto na planilha<br>
+                    2. Certifique-se de que a imagem está compartilhada publicamente<br>
+                    3. No Google Drive, clique com botão direito na imagem > "Compartilhar" > "Qualquer pessoa com o link"<br>
+                    4. Copie o link novamente e atualize na planilha<br><br>
+                    <strong>Link original da planilha:</strong><br>
+                    <a href="${imagemObj.urlOriginal}" target="_blank" rel="noopener noreferrer">Clique aqui para abrir no Google Drive</a>
                 `;
+                debugDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Falha ao carregar a imagem. Verifique as instruções acima.`;
             };
             
             imgElement.src = imagemObj.imagem;
+            document.getElementById("imagemModal").style.display = "flex";
+            
         } else {
-            debugDiv.innerHTML = `
-                <div class="instrucoes">
-                    <strong>📷 NENHUMA IMAGEM ENCONTRADA PARA ${currentMonth}</strong><br><br>
-                    <strong>Como adicionar uma imagem:</strong><br><br>
-                    1. Na aba <strong>"imagem"</strong> da sua planilha<br>
-                    2. Adicione uma linha com o mês <strong>${currentMonth}</strong><br>
-                    3. Na coluna <strong>Imagem</strong>, cole o link:<br>
-                    <code>https://drive.google.com/file/d/SEU_ID/view?usp=sharing</code><br><br>
-                    4. <strong>COMPARTILHE A IMAGEM:</strong> Abra o link > Compartilhar > "Qualquer pessoa com o link"<br>
-                    5. Recarregue o aplicativo (F5)
-                </div>
+            tituloElement.innerHTML = `<i class="fas fa-image"></i> ${currentMonth} - Imagem não encontrada`;
+            errorDiv.style.display = "block";
+            const errorInstructions = document.getElementById("errorInstructions");
+            errorInstructions.innerHTML = `
+                <strong>📷 NENHUMA IMAGEM ENCONTRADA PARA ${currentMonth}</strong><br><br>
+                <strong>Como adicionar uma imagem:</strong><br><br>
+                1. Na aba <strong>"imagem"</strong> da sua planilha<br>
+                2. Adicione uma linha com o mês <strong>${currentMonth}</strong><br>
+                3. Na coluna <strong>Imagem</strong>, cole o link do Google Drive:<br>
+                <code>https://drive.google.com/file/d/SEU_ID_DO_ARQUIVO/view</code><br><br>
+                4. <strong>COMPARTILHE A IMAGEM:</strong><br>
+                Abra o link > Clique em "Compartilhar" > Mude para "Qualquer pessoa com o link"<br><br>
+                5. Recarregue o aplicativo (F5)
             `;
-            document.getElementById("imagemModalTitulo").innerHTML = `<i class="fas fa-image"></i> ${currentMonth} - Imagem não encontrada`;
             document.getElementById("imagemModal").style.display = "flex";
         }
     }
@@ -651,14 +675,17 @@
     
     function fecharImagemModal() { 
         document.getElementById("imagemModal").style.display = "none"; 
-        document.getElementById("imagemModalImg").src = "";
+        // Limpa a imagem para não ficar em cache
+        const imgElement = document.getElementById("imagemModalImg");
+        imgElement.src = "";
+        imgElement.style.display = "none";
+        document.getElementById("imageLoadingSpinner").style.display = "none";
+        document.getElementById("imageErrorDiv").style.display = "none";
         document.getElementById("imagemDebugInfo").innerHTML = "";
-        // Reset dos toques
         touchStartY = 0;
-        touchEndY = 0;
     }
     
-    // ========== FUNÇÕES PARA SWIPE (DESLIZAR) ==========
+    // Swipe para fechar
     function setupSwipeToClose() {
         const modalContent = document.getElementById("imagemModalContent");
         if (!modalContent) return;
@@ -668,16 +695,15 @@
         }, { passive: true });
         
         modalContent.addEventListener('touchmove', function(e) {
-            touchEndY = e.touches[0].clientY;
+            const touchEndY = e.touches[0].clientY;
             const diffY = touchEndY - touchStartY;
-            // Se deslizou para baixo mais de 50px, fecha o modal
-            if (diffY > 50) {
+            if (diffY > 60) {
                 fecharImagemModal();
             }
         }, { passive: true });
     }
     
-    // Impede que o gesto de voltar (seta) feche o app quando o modal está aberto
+    // Previne o fechamento do app com a seta de voltar
     window.addEventListener('popstate', function(event) {
         const imagemModal = document.getElementById("imagemModal");
         const detalheModal = document.getElementById("detalheModal");
@@ -693,7 +719,6 @@
         }
     });
     
-    // Adiciona um estado inicial no histórico
     history.pushState(null, null, window.location.href);
     
     window.onclick = function(event) {
