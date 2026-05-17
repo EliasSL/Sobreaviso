@@ -16,7 +16,6 @@
             overflow-x: hidden;
         }
         
-        /* Fundo com texto SEVIC em cascata - AZUL NEON */
         .watermark {
             position: fixed;
             top: 0;
@@ -122,10 +121,14 @@
         }
         .action-buttons-container {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             gap: 0.8rem;
             margin-bottom: 1rem;
             flex-wrap: wrap;
+        }
+        .action-buttons-left {
+            display: flex;
+            gap: 0.8rem;
         }
         .btn-acao {
             background: #2a5520;
@@ -187,6 +190,83 @@
             color: transparent; 
         }
         .total-label { font-size: 0.65rem; color: #b8da8a; margin-top: 0.2rem; }
+        
+        .diario-section {
+            background: rgba(8,25,4,0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #66aaff;
+        }
+        .diario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .diario-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #66aaff;
+        }
+        .date-selector {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .date-selector input {
+            background: #2a5520;
+            border: 1px solid #66aaff;
+            padding: 0.5rem 0.8rem;
+            border-radius: 30px;
+            color: white;
+            font-size: 0.85rem;
+        }
+        .date-selector button {
+            background: #2a6e6e;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .date-selector button:hover {
+            background: #3a8e8e;
+        }
+        .diario-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .plantonista-card {
+            background: rgba(0,0,0,0.5);
+            border-radius: 0.8rem;
+            padding: 0.8rem;
+            border-left: 4px solid #66aaff;
+        }
+        .plantonista-label {
+            font-size: 0.7rem;
+            color: #88ccff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .plantonista-nome {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ccffaa;
+            margin-top: 0.3rem;
+        }
+        .no-data {
+            text-align: center;
+            padding: 1rem;
+            color: #ffaa66;
+        }
+        
         .modal, .modal-imagem {
             display: none;
             position: fixed;
@@ -286,7 +366,8 @@
             .cards-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
             .close-modal-btn { width: 45px; height: 45px; font-size: 1.8rem; top: 8px; right: 8px; }
             .drive-embed { height: 55vh; }
-            .action-buttons-container { justify-content: center; }
+            .action-buttons-container { flex-direction: column; }
+            .action-buttons-left { justify-content: center; }
         }
         .debug-info { font-size: 0.7rem; color: #ffcc88; margin-top: 0.3rem; word-break: break-all; }
         .instrucoes {
@@ -308,6 +389,9 @@
             padding: 2rem;
             color: #00aaff;
         }
+        .success {
+            color: #aaffaa;
+        }
     </style>
 </head>
 <body>
@@ -322,17 +406,41 @@
         <h1><i class="fas fa-clipboard-list"></i> SEVIC/NBO · ESCALA SOBREAVISO</h1>
         <p>Clique no card do servidor para ver detalhes mensais | Botão "Imagem" para visualizar foto do mês</p>
     </div>
+    
+    <div class="diario-section" id="diarioSection">
+        <div class="diario-header">
+            <div class="diario-title">
+                <i class="fas fa-calendar-day"></i> Escala do Dia - Plantão
+            </div>
+            <div class="date-selector">
+                <input type="date" id="datePicker" value="">
+                <button onclick="buscarEscalaDiaria()">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                <button onclick="buscarDiaAtual()">
+                    <i class="fas fa-calendar-today"></i> Hoje
+                </button>
+            </div>
+        </div>
+        <div id="diarioContent" class="diario-content">
+            <div class="no-data">Carregando dados...</div>
+        </div>
+        <div id="debugPlantao" class="debug-info" style="margin-top: 0.5rem; font-size: 0.7rem;"></div>
+    </div>
+    
     <div class="months-wrapper">
         <div class="months-scroll" id="monthsContainer"><div class="loading">Carregando meses...</div></div>
     </div>
     
     <div class="action-buttons-container">
-        <button class="btn-acao btn-atualizar" id="btnAtualizar" onclick="atualizarPagina()">
-            <i class="fas fa-sync-alt"></i> Atualizar
-        </button>
-        <button class="btn-acao btn-imagem" id="btnVisualizarImagem">
-            <i class="fas fa-image"></i> Ver Imagem do Mês
-        </button>
+        <div class="action-buttons-left">
+            <button class="btn-acao btn-atualizar" id="btnAtualizar" onclick="atualizarPagina()">
+                <i class="fas fa-sync-alt"></i> Atualizar
+            </button>
+            <button class="btn-acao btn-imagem" id="btnVisualizarImagem">
+                <i class="fas fa-image"></i> Ver Imagem do Mês
+            </button>
+        </div>
     </div>
     
     <div id="cardsGrid" class="cards-grid"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Carregando escala...</div></div>
@@ -344,7 +452,6 @@
 
 <div id="detalheModal" class="modal"><div class="modal-content"><h3 id="modalServidorNome"></h3><div id="detalhesContainer"></div><button class="fechar-modal" onclick="fecharModal()">Fechar</button></div></div>
 
-<!-- Modal de Imagem - Apenas com botão X para fechar -->
 <div id="imagemModal" class="modal-imagem">
     <div class="modal-imagem-content" id="imagemModalContent">
         <button class="close-modal-btn" onclick="fecharImagemModal()">&times;</button>
@@ -363,12 +470,14 @@
 </div>
 
 <script>
+    // URL DO SEU WEB APP - ATUALIZE AQUI APÓS IMPLANTAR
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkAdaM_V9U91D6eyroojwYAB_J55uQp04jYedFZmkJ2U3ZKMSxhpkHV3Bd0oeQjqou/exec";
     
     const TODOS_MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
                          "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
     
     let escalaData = [];
+    let plantaoData = [];
     let currentMonth = "";
     let mesesComDados = [];
     let touchStartY = 0;
@@ -394,6 +503,26 @@
         return TODOS_MESES[hoje.getMonth()];
     }
     
+    // Converte data ISO (YYYY-MM-DD) para DD/MM/YYYY para comparação
+    function isoParaDDMMYYYY(dataISO) {
+        if (!dataISO) return "";
+        const partes = dataISO.split('-');
+        if (partes.length === 3) {
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+        return dataISO;
+    }
+    
+    // Converte DD/MM/YYYY para ISO (YYYY-MM-DD)
+    function ddmmYYYYparaISO(dataDDMM) {
+        if (!dataDDMM) return "";
+        const partes = dataDDMM.split('/');
+        if (partes.length === 3) {
+            return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+        }
+        return dataDDMM;
+    }
+    
     function converterDataParaMes(dataStr) {
         if (!dataStr) return "";
         let data;
@@ -414,6 +543,8 @@
     
     async function carregarDados() {
         const statusSpan = document.getElementById("connectionStatus");
+        const debugDiv = document.getElementById("debugPlantao");
+        
         try {
             statusSpan.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Conectando à planilha...';
             const response = await fetch(SCRIPT_URL, { method: 'GET', mode: 'cors', cache: 'no-cache' });
@@ -439,24 +570,113 @@
                         domingoP1: Number(item.domingoP1) || 0,
                         domingoP2: Number(item.domingoP2) || 0,
                         totalFDS: Number(item.totalFDS) || 0,
-                        feriasInicio: item.feriasInicio || item.feriasInicial || "",
+                        feriasInicio: item.feriasInicio || "",
                         feriasFinal: item.feriasFinal || ""
                     };
                 }).filter(item => item.servidor && item.mes);
                 
                 mesesComDados = [...new Set(escalaData.map(item => item.mes))];
-                statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> Dados carregados!';
-                statusSpan.style.color = "#aaffaa";
-                return true;
-            } else {
-                throw new Error(data.erro || "Nenhum dado encontrado");
+                console.log('✅ Dados de escala carregados:', escalaData.length, 'registros');
             }
+            
+            // Carregar dados da aba plantao
+            if (data && data.plantao && data.plantao.length > 0) {
+                plantaoData = data.plantao.map(item => ({
+                    id: item.id,
+                    dataOriginal: item.data,
+                    data: item.data, // Mantém no formato original (DD/MM/YYYY)
+                    p1: item.p1 || "",
+                    p2: item.p2 || ""
+                }));
+                
+                console.log('📅 Dados de plantão carregados:', plantaoData.length, 'registros');
+                console.log('📅 Primeiros registros:', plantaoData.slice(0, 5));
+                
+                debugDiv.innerHTML = `<i class="fas fa-check-circle success"></i> ${plantaoData.length} registros de plantão carregados. Ex: ${plantaoData[0] ? plantaoData[0].data : 'nenhum'}`;
+            } else {
+                console.log('⚠️ Nenhum dado de plantão encontrado');
+                debugDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Nenhum registro de plantão encontrado. Verifique se a aba "plantao" existe na planilha.`;
+            }
+            
+            statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> Dados carregados!';
+            statusSpan.style.color = "#aaffaa";
+            return true;
         } catch (error) {
             console.error("❌ Erro:", error);
             statusSpan.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro: ' + error.message;
             statusSpan.style.color = "#ffaa66";
+            debugDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro ao carregar: ${error.message}`;
             return false;
         }
+    }
+    
+    function buscarEscalaDiaria() {
+        const datePicker = document.getElementById("datePicker");
+        let dataSelecionada = datePicker.value;
+        const diarioContent = document.getElementById("diarioContent");
+        const debugDiv = document.getElementById("debugPlantao");
+        
+        if (!dataSelecionada) {
+            diarioContent.innerHTML = '<div class="no-data">Selecione uma data para visualizar os plantonistas P1 e P2</div>';
+            return;
+        }
+        
+        // Converte a data ISO do input (YYYY-MM-DD) para DD/MM/YYYY para comparar com os dados
+        const dataSelecionadaDDMM = isoParaDDMMYYYY(dataSelecionada);
+        
+        console.log('Buscando data ISO:', dataSelecionada);
+        console.log('Buscando data DD/MM:', dataSelecionadaDDMM);
+        console.log('Dados de plantão disponíveis:', plantaoData);
+        
+        // Busca pelo formato DD/MM/YYYY
+        const registro = plantaoData.find(item => item.data === dataSelecionadaDDMM);
+        
+        if (registro) {
+            diarioContent.innerHTML = `
+                <div class="plantonista-card">
+                    <div class="plantonista-label"><i class="fas fa-user-md"></i> PLANTONISTA P1</div>
+                    <div class="plantonista-nome">${registro.p1 || 'Não informado'}</div>
+                </div>
+                <div class="plantonista-card">
+                    <div class="plantonista-label"><i class="fas fa-user-nurse"></i> PLANTONISTA P2</div>
+                    <div class="plantonista-nome">${registro.p2 || 'Não informado'}</div>
+                </div>
+            `;
+            debugDiv.innerHTML = `<i class="fas fa-check-circle success"></i> Encontrado: ${registro.p1} / ${registro.p2} para ${registro.data}`;
+        } else {
+            // Mostra algumas datas disponíveis para debug
+            const datasDisponiveis = plantaoData.slice(0, 5).map(p => p.data).join(', ');
+            diarioContent.innerHTML = `
+                <div class="no-data">
+                    <i class="fas fa-calendar-times"></i><br>
+                    Nenhum plantonista encontrado para o dia ${dataSelecionadaDDMM}<br>
+                    <small>Datas disponíveis: ${datasDisponiveis || 'nenhuma'}</small>
+                </div>
+            `;
+            debugDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Data ${dataSelecionadaDDMM} não encontrada. Datas disponíveis: ${datasDisponiveis || 'nenhuma'}`;
+        }
+    }
+    
+    function formatarDataBR(dataISO) {
+        if (!dataISO) return "";
+        const partes = dataISO.split('-');
+        if (partes.length === 3) {
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+        return dataISO;
+    }
+    
+    function buscarDiaAtual() {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        const dataISO = `${ano}-${mes}-${dia}`;
+        
+        const datePicker = document.getElementById("datePicker");
+        datePicker.value = dataISO;
+        
+        buscarEscalaDiaria();
     }
     
     function renderMeses() {
@@ -628,8 +848,21 @@
         renderMeses();
         renderCards(currentMonth);
         document.getElementById("btnVisualizarImagem").onclick = visualizarImagem;
+        
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        const dataAtual = `${ano}-${mes}-${dia}`;
+        const datePicker = document.getElementById("datePicker");
+        datePicker.value = dataAtual;
+        buscarEscalaDiaria();
+        
         setupSwipeToClose();
     }
+    
+    window.buscarEscalaDiaria = buscarEscalaDiaria;
+    window.buscarDiaAtual = buscarDiaAtual;
     
     init();
 </script>
