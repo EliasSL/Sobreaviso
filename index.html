@@ -478,24 +478,55 @@
     
     let escalaData = [];
     let plantaoData = [];
+    let imagensData = [];  // NOVO: Array para armazenar os links das imagens vindos da planilha
     let currentMonth = "";
     let mesesComDados = [];
     let touchStartY = 0;
     
-    const MAPEAMENTO_IMAGENS = {
-        "maio": "https://drive.google.com/file/d/16o2WQfHydMRloZV3gAdX5TW5L-AQFJ3N/preview",
-        "junho": "https://drive.google.com/file/d/1YMdVyzllVez-VtvnFgRqVi-As9QwAtXA/preview",
-        "julho": "https://drive.google.com/file/d/1By--5Lacv83lRWQDQ7OCswulRfaYL8tU/preview",
-        "agosto": "https://drive.google.com/file/d/1ZujM-HZQBvmQx63OvFQ52N-BFF_JOwri/preview",
-        "setembro": "https://drive.google.com/file/d/1_iK7uRehITb5dxqxnIb-rfmeFUFFbXFI/preview",
-        "outubro": "https://drive.google.com/file/d/1fyXM9WR7fD3LiAFzrPlOX3nh8pddPp-R/preview",
-        "novembro": "https://drive.google.com/file/d/1Zp4NGjSH6BYgVYc18fIuSsj_7YhgZ2G-/preview",
-        "dezembro": "https://drive.google.com/file/d/1zktqbE6jUSdryLw1D1e6cThFkF55liyS/preview"
-    };
+    // Função para converter link do Google Drive para embed
+    function converterParaEmbed(url) {
+        if (!url) return null;
+        
+        // Se já é um link de preview ou embed, retorna
+        if (url.includes('/preview')) return url;
+        if (url.includes('/uc?export=view')) return url;
+        
+        // Extrair o ID do arquivo
+        // Padrão: https://drive.google.com/file/d/ID_do_arquivo/view
+        let match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (!match) {
+            // Tenta outro padrão: https://drive.google.com/open?id=ID
+            match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        }
+        if (!match) {
+            // Tenta padrão de link direto do Google Drive
+            match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        }
+        
+        if (match && match[1]) {
+            const fileId = match[1];
+            return `https://drive.google.com/file/d/${fileId}/preview`;
+        }
+        
+        return null;
+    }
     
-    function getUrlEmbed(mes) {
-        const mesLower = mes.toLowerCase();
-        return MAPEAMENTO_IMAGENS[mesLower] || null;
+    function getUrlEmbedPorMes(mes) {
+        // Busca o link da imagem na planilha (dados mais recentes)
+        const imagemEncontrada = imagensData.find(img => 
+            img.mes && img.mes.toLowerCase() === mes.toLowerCase()
+        );
+        
+        if (imagemEncontrada && imagemEncontrada.urlImagem) {
+            const embedUrl = converterParaEmbed(imagemEncontrada.urlImagem);
+            if (embedUrl) {
+                console.log(`✅ Link encontrado para ${mes}:`, embedUrl);
+                return embedUrl;
+            }
+        }
+        
+        console.log(`❌ Nenhum link encontrado para ${mes}`);
+        return null;
     }
     
     function getMesAtual() {
@@ -503,7 +534,6 @@
         return TODOS_MESES[hoje.getMonth()];
     }
     
-    // Converte data ISO (YYYY-MM-DD) para DD/MM/YYYY para comparação
     function isoParaDDMMYYYY(dataISO) {
         if (!dataISO) return "";
         const partes = dataISO.split('-');
@@ -511,16 +541,6 @@
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
         return dataISO;
-    }
-    
-    // Converte DD/MM/YYYY para ISO (YYYY-MM-DD)
-    function ddmmYYYYparaISO(dataDDMM) {
-        if (!dataDDMM) return "";
-        const partes = dataDDMM.split('/');
-        if (partes.length === 3) {
-            return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-        }
-        return dataDDMM;
     }
     
     function converterDataParaMes(dataStr) {
@@ -579,12 +599,28 @@
                 console.log('✅ Dados de escala carregados:', escalaData.length, 'registros');
             }
             
+            // NOVO: Carregar dados da aba de imagens
+            if (data && data.imagens && data.imagens.length > 0) {
+                imagensData = data.imagens.map(item => ({
+                    id: item.id,
+                    mes: item.mes ? item.mes.trim() : "",
+                    urlImagem: item.imagem || item.url || ""
+                })).filter(img => img.mes && img.urlImagem);
+                
+                console.log('🖼️ Dados de imagens carregados:', imagensData.length, 'registros');
+                console.log('📸 Mapeamento de imagens:', imagensData);
+            } else {
+                console.log('⚠️ Nenhum dado de imagens encontrado na planilha');
+                // Cria um array vazio para fallback
+                imagensData = [];
+            }
+            
             // Carregar dados da aba plantao
             if (data && data.plantao && data.plantao.length > 0) {
                 plantaoData = data.plantao.map(item => ({
                     id: item.id,
                     dataOriginal: item.data,
-                    data: item.data, // Mantém no formato original (DD/MM/YYYY)
+                    data: item.data,
                     p1: item.p1 || "",
                     p2: item.p2 || ""
                 }));
@@ -621,14 +657,12 @@
             return;
         }
         
-        // Converte a data ISO do input (YYYY-MM-DD) para DD/MM/YYYY para comparar com os dados
         const dataSelecionadaDDMM = isoParaDDMMYYYY(dataSelecionada);
         
         console.log('Buscando data ISO:', dataSelecionada);
         console.log('Buscando data DD/MM:', dataSelecionadaDDMM);
         console.log('Dados de plantão disponíveis:', plantaoData);
         
-        // Busca pelo formato DD/MM/YYYY
         const registro = plantaoData.find(item => item.data === dataSelecionadaDDMM);
         
         if (registro) {
@@ -644,7 +678,6 @@
             `;
             debugDiv.innerHTML = `<i class="fas fa-check-circle success"></i> Encontrado: ${registro.p1} / ${registro.p2} para ${registro.data}`;
         } else {
-            // Mostra algumas datas disponíveis para debug
             const datasDisponiveis = plantaoData.slice(0, 5).map(p => p.data).join(', ');
             diarioContent.innerHTML = `
                 <div class="no-data">
@@ -655,15 +688,6 @@
             `;
             debugDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Data ${dataSelecionadaDDMM} não encontrada. Datas disponíveis: ${datasDisponiveis || 'nenhuma'}`;
         }
-    }
-    
-    function formatarDataBR(dataISO) {
-        if (!dataISO) return "";
-        const partes = dataISO.split('-');
-        if (partes.length === 3) {
-            return `${partes[2]}/${partes[1]}/${partes[0]}`;
-        }
-        return dataISO;
     }
     
     function buscarDiaAtual() {
@@ -739,14 +763,16 @@
         document.getElementById("detalheModal").style.display = "flex";
     }
     
-    function visualizarImagem() {
-        const urlEmbed = getUrlEmbed(currentMonth);
+    // Função CORRIGIDA - busca o link da imagem diretamente da planilha
+    async function visualizarImagem() {
+        const urlEmbed = getUrlEmbedPorMes(currentMonth);
         const iframe = document.getElementById("driveIframe");
         const loadingSpinner = document.getElementById("imageLoadingSpinner");
         const errorDiv = document.getElementById("imageErrorDiv");
         const tituloElement = document.getElementById("imagemModalTitulo");
         const debugDiv = document.getElementById("imagemDebugInfo");
         
+        // Resetar estado
         iframe.style.display = "none";
         loadingSpinner.style.display = "none";
         errorDiv.style.display = "none";
@@ -754,42 +780,81 @@
         iframe.src = "";
         
         if (urlEmbed) {
-            tituloElement.innerHTML = `<i class="fas fa-image"></i> ${currentMonth}`;
+            tituloElement.innerHTML = `<i class="fas fa-image"></i> ${currentMonth} - Carregando...`;
             loadingSpinner.style.display = "block";
-            iframe.style.display = "block";
             
+            // Configurar eventos do iframe
             iframe.onload = function() {
                 loadingSpinner.style.display = "none";
-                debugDiv.innerHTML = `<i class="fas fa-check-circle"></i> Imagem carregada! Toque no X para sair.`;
+                iframe.style.display = "block";
+                tituloElement.innerHTML = `<i class="fas fa-image"></i> ${currentMonth}`;
+                debugDiv.innerHTML = `<i class="fas fa-check-circle success"></i> Imagem carregada da planilha!`;
             };
             
             iframe.onerror = function() {
                 loadingSpinner.style.display = "none";
                 iframe.style.display = "none";
                 errorDiv.style.display = "block";
+                tituloElement.innerHTML = `<i class="fas fa-image"></i> ${currentMonth} - Erro ao carregar`;
                 document.getElementById("errorInstructions").innerHTML = `
                     <strong>⚠️ ERRO AO CARREGAR IMAGEM</strong><br><br>
-                    <strong>🔧 SOLUÇÃO:</strong><br>
+                    <strong>Link atual na planilha:</strong><br>
+                    <code style="word-break:break-all; font-size:0.7rem;">${urlEmbed}</code><br><br>
+                    <strong>🔧 SOLUÇÕES:</strong><br>
                     1. Verifique se a imagem está compartilhada publicamente no Google Drive<br>
                     2. No Google Drive, clique com botão direito na imagem > "Compartilhar"<br>
                     3. Mude para <strong>"Qualquer pessoa com o link"</strong><br>
                     4. Clique em "Concluído"<br>
-                    5. Recarregue o aplicativo
+                    5. Clique em "Atualizar" para recarregar os dados<br>
+                    6. Tente novamente
                 `;
             };
             
             iframe.src = urlEmbed;
             document.getElementById("imagemModal").style.display = "flex";
         } else {
+            // Mostra quais meses têm imagens cadastradas
+            const mesesComImagem = imagensData.map(img => img.mes).join(', ');
             tituloElement.innerHTML = `<i class="fas fa-image"></i> ${currentMonth} - Imagem não encontrada`;
             errorDiv.style.display = "block";
             document.getElementById("errorInstructions").innerHTML = `
                 <strong>📷 NENHUMA IMAGEM CONFIGURADA PARA ${currentMonth}</strong><br><br>
-                <strong>Mapeamento disponível para:</strong><br>
-                Maio, Junho, Julho, Agosto, Setembro, Outubro, Novembro, Dezembro
+                <strong>Meses com imagem na planilha:</strong><br>
+                ${mesesComImagem || 'Nenhum mês cadastrado'}<br><br>
+                <strong>Como adicionar/corrigir:</strong><br>
+                1. Na planilha, vá para a aba "imagens"<br>
+                2. Adicione ou edite a linha do mês desejado<br>
+                3. Cole o link completo do Google Drive na coluna "imagem"<br>
+                4. Compartilhe a imagem como "Qualquer pessoa com o link"<br>
+                5. Clique em "Atualizar" no app e tente novamente
             `;
             document.getElementById("imagemModal").style.display = "flex";
         }
+    }
+    
+    // Função para recarregar dados sem recarregar a página
+    async function recarregarDados() {
+        const btnAtualizar = document.getElementById("btnAtualizar");
+        const originalText = btnAtualizar.innerHTML;
+        btnAtualizar.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Recarregando...';
+        btnAtualizar.disabled = true;
+        
+        await carregarDados();
+        
+        // Re-renderizar com os novos dados
+        renderCards(currentMonth);
+        
+        btnAtualizar.innerHTML = originalText;
+        btnAtualizar.disabled = false;
+        
+        // Mostrar feedback
+        const statusSpan = document.getElementById("connectionStatus");
+        statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> Dados recarregados!';
+        setTimeout(() => {
+            if (statusSpan.innerHTML.includes('recarregados')) {
+                statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> Dados carregados!';
+            }
+        }, 2000);
     }
     
     function fecharModal() { 
@@ -847,7 +912,16 @@
         currentMonth = getMesAtual();
         renderMeses();
         renderCards(currentMonth);
-        document.getElementById("btnVisualizarImagem").onclick = visualizarImagem;
+        
+        // Substituir o onclick do botão de imagem pela nova função
+        const btnImagem = document.getElementById("btnVisualizarImagem");
+        btnImagem.onclick = visualizarImagem;
+        
+        // Modificar o botão de atualizar para recarregar dados sem refresh total (opcional)
+        // Mantém a opção original de refresh da página também
+        const btnAtualizar = document.getElementById("btnAtualizar");
+        // Comentado para manter o comportamento original - descomente se quiser refresh sem recarregar página
+        // btnAtualizar.onclick = recarregarDados;
         
         const hoje = new Date();
         const ano = hoje.getFullYear();
