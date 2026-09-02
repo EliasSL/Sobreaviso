@@ -16,205 +16,13 @@
             overflow-x: hidden;
         }
         
-        /* Login Screen Styles */
-        .login-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0a2a08 0%, #143d0a 50%, #1a4a0c 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            backdrop-filter: blur(5px);
-        }
-        
-        .login-box {
-            background: rgba(18,35,12,0.95);
-            backdrop-filter: blur(12px);
-            border-radius: 2rem;
-            padding: 2rem;
-            width: 90%;
-            max-width: 400px;
-            border: 2px solid #ccff66;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            animation: fadeInUp 0.5s ease;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .login-logo {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .login-logo i {
-            font-size: 4rem;
-            color: #ccff66;
-            margin-bottom: 0.5rem;
-        }
-        
-        .login-logo h2 {
-            color: #f5ffcf;
-            font-size: 1.8rem;
-            font-weight: 800;
-        }
-        
-        .login-logo p {
-            color: #b8da8a;
-            font-size: 0.8rem;
-        }
-        
-        .login-input-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .login-input-group label {
-            display: block;
-            color: #c4e69a;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-        
-        .login-input-group input {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            background: #2a5520;
-            border: 1px solid #ccff66;
-            border-radius: 1rem;
-            color: white;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-        
-        .login-input-group input:focus {
-            outline: none;
-            border-color: #ffff88;
-            box-shadow: 0 0 10px #ccff66;
-        }
-        
-        .login-input-group input::placeholder {
-            color: #8aaa6a;
-        }
-        
-        .login-btn {
-            width: 100%;
-            padding: 0.8rem;
-            background: linear-gradient(135deg, #ccff66, #b3ff33);
-            border: none;
-            border-radius: 1rem;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #0a3a02;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 0.5rem;
-        }
-        
-        .login-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 15px #ccff66;
-        }
-        
-        .login-message {
-            text-align: center;
-            margin-top: 1rem;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            font-size: 0.85rem;
-        }
-        
-        .login-message.error {
-            background: rgba(255,68,68,0.2);
-            color: #ff8888;
-            border: 1px solid #ff4444;
-        }
-        
-        .login-message.success {
-            background: rgba(68,255,68,0.2);
-            color: #88ff88;
-            border: 1px solid #44ff44;
-        }
-        
+                  
         /* App Content - Inicialmente escondido */
         .app-content {
             display: none;
         }
         
-        .user-info-bar {
-            background: rgba(8,25,4,0.85);
-            backdrop-filter: blur(12px);
-            border-radius: 50px;
-            padding: 0.5rem 1rem;
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #ccff66;
-        }
-        
-        .user-info i {
-            font-size: 1.2rem;
-        }
-        
-        .user-actions {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        
-        .alterar-senha-btn {
-            background: rgba(255,200,68,0.3);
-            border: 1px solid #ffcc44;
-            padding: 0.4rem 1rem;
-            border-radius: 30px;
-            color: #ffdd88;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 600;
-            font-size: 0.8rem;
-        }
-        
-        .alterar-senha-btn:hover {
-            background: rgba(255,200,68,0.6);
-            color: white;
-        }
-        
-        .logout-btn {
-            background: rgba(255,68,68,0.3);
-            border: 1px solid #ff4444;
-            padding: 0.4rem 1rem;
-            border-radius: 30px;
-            color: #ff8888;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 600;
-        }
-        
-        .logout-btn:hover {
-            background: rgba(255,68,68,0.6);
-            color: white;
-        }
-        
+       
         /* Modal Alterar Senha */
         .modal-alterar-senha {
             display: none;
@@ -721,74 +529,10 @@
 </div>
 
 <!-- Login Screen -->
-<div id="loginContainer" class="login-container">
-    <div class="login-box">
-        <div class="login-logo">
-            <i class="fas fa-shield-alt"></i>
-            <h2>SEVIC/NBO</h2>
-            <p>Sistema de Escala de Sobreaviso</p>
-        </div>
-        <div class="login-input-group">
-            <label><i class="fas fa-user"></i> Usuário</label>
-            <input type="text" id="loginUsuario" placeholder="Digite seu usuário" autocomplete="off">
-        </div>
-        <div class="login-input-group">
-            <label><i class="fas fa-lock"></i> Senha</label>
-            <input type="password" id="loginSenha" placeholder="Digite sua senha" onkeypress="if(event.keyCode===13) fazerLogin()">
-        </div>
-        <button class="login-btn" onclick="fazerLogin()">
-            <i class="fas fa-sign-in-alt"></i> Entrar
-        </button>
-        <div id="loginMessage" class="login-message"></div>
-    </div>
-</div>
-
-<!-- Modal Alterar Senha -->
-<div id="modalAlterarSenha" class="modal-alterar-senha">
-    <div class="modal-alterar-senha-content">
-        <h3><i class="fas fa-key"></i> Alterar Senha</h3>
-        <div class="alterar-senha-input-group">
-            <label><i class="fas fa-lock"></i> Senha Atual</label>
-            <input type="password" id="senhaAtual" placeholder="Digite sua senha atual">
-        </div>
-        <div class="alterar-senha-input-group">
-            <label><i class="fas fa-key"></i> Nova Senha</label>
-            <input type="password" id="novaSenha" placeholder="Digite a nova senha (mínimo 4 caracteres)">
-        </div>
-        <div class="alterar-senha-input-group">
-            <label><i class="fas fa-check-circle"></i> Confirmar Nova Senha</label>
-            <input type="password" id="confirmarNovaSenha" placeholder="Confirme a nova senha">
-        </div>
-        <div class="alterar-senha-buttons">
-            <button class="btn-salvar-senha" onclick="salvarAlteracaoSenha()">
-                <i class="fas fa-save"></i> Salvar
-            </button>
-            <button class="btn-cancelar-senha" onclick="fecharModalAlterarSenha()">
-                <i class="fas fa-times"></i> Cancelar
-            </button>
-        </div>
-        <div id="senhaMessage" class="senha-message"></div>
-    </div>
-</div>
 
 <!-- Main App Content -->
 <div id="appContent" class="app-content">
-    <div class="container">
-        <div class="user-info-bar">
-            <div class="user-info">
-                <i class="fas fa-user-circle"></i>
-                <span id="usuarioLogadoNome"></span>
-            </div>
-            <div class="user-actions">
-                <button class="alterar-senha-btn" onclick="abrirModalAlterarSenha()">
-                    <i class="fas fa-key"></i> Alterar Senha
-                </button>
-                <button class="logout-btn" onclick="fazerLogout()">
-                    <i class="fas fa-sign-out-alt"></i> Sair
-                </button>
-            </div>
-        </div>
-        
+            
         <div class="header">
             <h1><i class="fas fa-clipboard-list"></i> SEVIC/NBO · ESCALA SOBREAVISO</h1>
             <p>Clique no card do servidor para ver detalhes mensais | Botão "Imagem" para visualizar foto do mês</p>
@@ -870,197 +614,12 @@
     let currentMonth = "";
     let mesesComDados = [];
     let touchStartY = 0;
-    let authToken = null;
-    let usuarioAtual = null;
-    let nomeUsuarioAtual = null;
     
     // ========== FUNÇÕES DE LOGIN ==========
     
-    function fazerLogin() {
-        const usuario = document.getElementById("loginUsuario").value.trim();
-        const senha = document.getElementById("loginSenha").value;
-        const messageDiv = document.getElementById("loginMessage");
-        const loginBtn = document.querySelector(".login-btn");
-        
-        if (!usuario || !senha) {
-            messageDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Preencha usuário e senha';
-            messageDiv.className = "login-message error";
-            return;
-        }
-        
-        messageDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Verificando credenciais...';
-        messageDiv.className = "login-message";
-        loginBtn.disabled = true;
-        
-        fetch(`${SCRIPT_URL}?action=login&usuario=${encodeURIComponent(usuario)}&senha=${encodeURIComponent(senha)}`, {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-cache'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.sucesso) {
-                messageDiv.innerHTML = '<i class="fas fa-check-circle"></i> Login realizado! Carregando sistema...';
-                messageDiv.className = "login-message success";
-                
-                authToken = data.token;
-                usuarioAtual = data.usuario;
-                nomeUsuarioAtual = data.nome;
-                
-                localStorage.setItem('sevic_token', authToken);
-                localStorage.setItem('sevic_usuario', data.usuario);
-                localStorage.setItem('sevic_nome', data.nome);
-                
-                setTimeout(() => {
-                    document.getElementById("loginContainer").style.display = "none";
-                    document.getElementById("appContent").style.display = "block";
-                    document.getElementById("usuarioLogadoNome").innerHTML = `<i class="fas fa-user-check"></i> ${data.nome} (${data.usuario})`;
-                    initApp();
-                }, 1000);
-            } else {
-                messageDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.message || 'Usuário ou senha inválidos'}`;
-                messageDiv.className = "login-message error";
-                loginBtn.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error("Erro no login:", error);
-            messageDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro ao conectar ao servidor';
-            messageDiv.className = "login-message error";
-            loginBtn.disabled = false;
-        });
-    }
-    
-    function fazerLogout() {
-        if (authToken) {
-            fetch(`${SCRIPT_URL}?action=logout`, {
-                method: 'GET',
-                mode: 'cors'
-            }).catch(console.error);
-        }
-        
-        localStorage.removeItem('sevic_token');
-        localStorage.removeItem('sevic_usuario');
-        localStorage.removeItem('sevic_nome');
-        
-        authToken = null;
-        usuarioAtual = null;
-        nomeUsuarioAtual = null;
-        
-        document.getElementById("appContent").style.display = "none";
-        document.getElementById("loginContainer").style.display = "flex";
-        document.getElementById("loginUsuario").value = "";
-        document.getElementById("loginSenha").value = "";
-        document.getElementById("loginMessage").innerHTML = "";
-    }
-    
-    function verificarSessao() {
-        const token = localStorage.getItem('sevic_token');
-        const nomeUsuario = localStorage.getItem('sevic_nome');
-        const usuario = localStorage.getItem('sevic_usuario');
-        
-        if (!token) {
-            return Promise.resolve(false);
-        }
-        
-        return fetch(`${SCRIPT_URL}?action=verificarSessao&token=${encodeURIComponent(token)}`, {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-cache'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.autenticado) {
-                authToken = token;
-                usuarioAtual = usuario;
-                nomeUsuarioAtual = nomeUsuario;
-                document.getElementById("usuarioLogadoNome").innerHTML = `<i class="fas fa-user-check"></i> ${nomeUsuario || usuario} (${usuario})`;
-                document.getElementById("loginContainer").style.display = "none";
-                document.getElementById("appContent").style.display = "block";
-                return true;
-            }
-            return false;
-        })
-        .catch(() => false);
-    }
     
     // ========== FUNÇÕES ALTERAR SENHA ==========
     
-    function abrirModalAlterarSenha() {
-        document.getElementById("modalAlterarSenha").style.display = "flex";
-        document.getElementById("senhaAtual").value = "";
-        document.getElementById("novaSenha").value = "";
-        document.getElementById("confirmarNovaSenha").value = "";
-        document.getElementById("senhaMessage").innerHTML = "";
-        document.getElementById("senhaMessage").className = "senha-message";
-    }
-    
-    function fecharModalAlterarSenha() {
-        document.getElementById("modalAlterarSenha").style.display = "none";
-    }
-    
-    function salvarAlteracaoSenha() {
-        const senhaAtual = document.getElementById("senhaAtual").value;
-        const novaSenha = document.getElementById("novaSenha").value;
-        const confirmarSenha = document.getElementById("confirmarNovaSenha").value;
-        const messageDiv = document.getElementById("senhaMessage");
-        const btnSalvar = document.querySelector(".btn-salvar-senha");
-        
-        if (!senhaAtual || !novaSenha || !confirmarSenha) {
-            messageDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Preencha todos os campos';
-            messageDiv.className = "senha-message error";
-            return;
-        }
-        
-        if (novaSenha !== confirmarSenha) {
-            messageDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> A nova senha e a confirmação não coincidem';
-            messageDiv.className = "senha-message error";
-            return;
-        }
-        
-        if (novaSenha.length < 4) {
-            messageDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> A nova senha deve ter no mínimo 4 caracteres';
-            messageDiv.className = "senha-message error";
-            return;
-        }
-        
-        messageDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Alterando senha...';
-        messageDiv.className = "senha-message";
-        btnSalvar.disabled = true;
-        
-        fetch(`${SCRIPT_URL}?action=alterarSenha&token=${encodeURIComponent(authToken)}&senhaAtual=${encodeURIComponent(senhaAtual)}&novaSenha=${encodeURIComponent(novaSenha)}`, {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-cache'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.sucesso) {
-                messageDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
-                messageDiv.className = "senha-message success";
-                
-                // Atualizar token
-                if (data.token) {
-                    authToken = data.token;
-                    localStorage.setItem('sevic_token', authToken);
-                }
-                
-                setTimeout(() => {
-                    fecharModalAlterarSenha();
-                }, 2000);
-            } else {
-                messageDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + data.message;
-                messageDiv.className = "senha-message error";
-            }
-            btnSalvar.disabled = false;
-        })
-        .catch(error => {
-            console.error("Erro ao alterar senha:", error);
-            messageDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro ao conectar ao servidor';
-            messageDiv.className = "senha-message error";
-            btnSalvar.disabled = false;
-        });
-    }
     
     // ========== FUNÇÕES DO APP ==========
     
@@ -1132,31 +691,22 @@
     }
     
     async function carregarDados() {
-        const statusSpan = document.getElementById("connectionStatus");
-        const debugDiv = document.getElementById("debugPlantao");
-        
-        if (!authToken) {
-            statusSpan.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Sessão expirada';
-            return false;
-        }
-        
-        try {
-            statusSpan.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Conectando à planilha...';
-            const response = await fetch(`${SCRIPT_URL}?token=${encodeURIComponent(authToken)}`, { 
-                method: 'GET', 
-                mode: 'cors', 
-                cache: 'no-cache' 
-            });
+    const statusSpan = document.getElementById("connectionStatus");
+    const debugDiv = document.getElementById("debugPlantao");
+
+    try {
+        statusSpan.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Conectando à planilha...';
+
+        const response = await fetch(`${SCRIPT_URL}`, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache'
+        });
             
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             
-            if (data.autenticado === false) {
-                statusSpan.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Sessão expirada. Faça login novamente.';
-                setTimeout(() => fazerLogout(), 2000);
-                return false;
-            }
-            
+                        
             if (data.erro) {
                 throw new Error(data.erro);
             }
@@ -1527,20 +1077,20 @@ function verificarMudancaDePlantao() {
             fecharModal();
             history.pushState(null, null, window.location.href);
             event.preventDefault();
-        } else if (document.getElementById("modalAlterarSenha").style.display === "flex") {
-            fecharModalAlterarSenha();
-            history.pushState(null, null, window.location.href);
-            event.preventDefault();
-        }
+        } 
     });
     
     history.pushState(null, null, window.location.href);
     
     window.onclick = function(event) {
-        if (event.target === document.getElementById("detalheModal")) fecharModal();
-        if (event.target === document.getElementById("imagemModal")) fecharImagemModal();
-        if (event.target === document.getElementById("modalAlterarSenha")) fecharModalAlterarSenha();
-    };
+    if (event.target === document.getElementById("detalheModal")) {
+        fecharModal();
+    }
+
+    if (event.target === document.getElementById("imagemModal")) {
+        fecharImagemModal();
+    }
+};
     
     async function initApp() {
     await carregarDados();
@@ -1563,28 +1113,22 @@ ultimaDataOperacional = obterDataOperacionalPlantao();
 setInterval(verificarMudancaDePlantao, 30000);
     setupSwipeToClose();
 }
-        
-        setupSwipeToClose();
-    }
     
     // Inicialização
-    verificarSessao().then(autenticado => {
-        if (!autenticado) {
-            document.getElementById("loginContainer").style.display = "flex";
-            document.getElementById("appContent").style.display = "none";
-        }
-    });
+    // ============================================================
+// INICIALIZAÇÃO DIRETA DO APLICATIVO
+// Sem login ou autenticação
+// ============================================================
+
+document.getElementById("appContent").style.display = "block";
+
+initApp();
     
     window.buscarEscalaDiaria = buscarEscalaDiaria;
-    window.buscarDiaAtual = buscarDiaAtual;
-    window.fazerLogin = fazerLogin;
-    window.fazerLogout = fazerLogout;
-    window.fecharModal = fecharModal;
-    window.fecharImagemModal = fecharImagemModal;
-    window.atualizarPagina = atualizarPagina;
-    window.abrirModalAlterarSenha = abrirModalAlterarSenha;
-    window.fecharModalAlterarSenha = fecharModalAlterarSenha;
-    window.salvarAlteracaoSenha = salvarAlteracaoSenha;
+window.buscarDiaAtual = buscarDiaAtual;
+window.fecharModal = fecharModal;
+window.fecharImagemModal = fecharImagemModal;
+window.atualizarPagina = atualizarPagina;
 </script>
 </body>
 </html>
