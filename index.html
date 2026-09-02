@@ -1270,19 +1270,75 @@
         div.textContent = text;
         return div.innerHTML;
     }
-    
-    function buscarDiaAtual() {
-        const hoje = new Date();
-        const ano = hoje.getFullYear();
-        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-        const dia = String(hoje.getDate()).padStart(2, '0');
-        const dataISO = `${ano}-${mes}-${dia}`;
-        
-        const datePicker = document.getElementById("datePicker");
-        datePicker.value = dataISO;
-        
-        buscarEscalaDiaria();
+    // ============================================================
+// DATA OPERACIONAL DO PLANTÃO
+// O plantão começa às 07:30 e termina às 07:30 do dia seguinte.
+// Entre 00:00 e 07:29, continua valendo o plantão do dia anterior.
+// ============================================================
+
+function obterDataOperacionalPlantao() {
+    const agora = new Date();
+
+    const hora = agora.getHours();
+    const minutos = agora.getMinutes();
+
+    // Antes das 07:30 → pertence ao plantão do dia anterior
+    if (hora < 7 || (hora === 7 && minutos < 30)) {
+        agora.setDate(agora.getDate() - 1);
     }
+
+    const ano = agora.getFullYear();
+    const mes = String(agora.getMonth() + 1).padStart(2, '0');
+    const dia = String(agora.getDate()).padStart(2, '0');
+
+    return `${ano}-${mes}-${dia}`;
+}
+// ============================================================
+// ATUALIZAÇÃO AUTOMÁTICA DO PLANTÃO
+// Verifica a cada 30 segundos se houve mudança de plantão.
+// ============================================================
+
+let ultimaDataOperacional = null;
+
+function verificarMudancaDePlantao() {
+
+    const dataAtualPlantao = obterDataOperacionalPlantao();
+
+    // Primeira execução
+    if (ultimaDataOperacional === null) {
+        ultimaDataOperacional = dataAtualPlantao;
+        return;
+    }
+
+    // Detectou mudança de plantão
+    if (dataAtualPlantao !== ultimaDataOperacional) {
+
+        ultimaDataOperacional = dataAtualPlantao;
+
+        console.log(
+            "🔄 Mudança de plantão detectada às 07:30:",
+            dataAtualPlantao
+        );
+
+        const datePicker = document.getElementById("datePicker");
+
+        if (datePicker) {
+            datePicker.value = dataAtualPlantao;
+            buscarEscalaDiaria();
+        }
+    }
+}
+    function buscarDiaAtual() {
+
+    // Obtém a data correta considerando o início do plantão às 07:30
+    const dataISO = obterDataOperacionalPlantao();
+
+    const datePicker = document.getElementById("datePicker");
+
+    datePicker.value = dataISO;
+
+    buscarEscalaDiaria();
+}
     
     function renderMeses() {
         const container = document.getElementById("monthsContainer");
@@ -1487,25 +1543,26 @@
     };
     
     async function initApp() {
-        await carregarDados();
-        currentMonth = getMesAtual();
-        renderMeses();
-        renderCards(currentMonth);
-        
-        const btnImagem = document.getElementById("btnVisualizarImagem");
-        btnImagem.onclick = visualizarImagem;
-        
-        const btnAtualizar = document.getElementById("btnAtualizar");
-        btnAtualizar.onclick = recarregarDados;
-        
-        const hoje = new Date();
-        const ano = hoje.getFullYear();
-        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-        const dia = String(hoje.getDate()).padStart(2, '0');
-        const dataAtual = `${ano}-${mes}-${dia}`;
-        const datePicker = document.getElementById("datePicker");
-        datePicker.value = dataAtual;
-        buscarEscalaDiaria();
+    await carregarDados();
+
+    currentMonth = getMesAtual();
+    renderMeses();
+    renderCards(currentMonth);
+
+    const btnImagem = document.getElementById("btnVisualizarImagem");
+    btnImagem.onclick = visualizarImagem;
+
+    const btnAtualizar = document.getElementById("btnAtualizar");
+    btnAtualizar.onclick = recarregarDados;
+
+    // Define automaticamente o plantão vigente
+    buscarDiaAtual();
+// Verifica automaticamente a mudança de plantão
+ultimaDataOperacional = obterDataOperacionalPlantao();
+
+setInterval(verificarMudancaDePlantao, 30000);
+    setupSwipeToClose();
+}
         
         setupSwipeToClose();
     }
